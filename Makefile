@@ -41,19 +41,19 @@ clear:
 	@echo "Done!"
 
 
-# migration_up:
-# 	cd migrations; echo "Inside migrations, Start migration"; \
-# 	goose postgres "host=localhost port=5432 user=poomipat password=running_fund_dev dbname=running_fund_dev sslmode=disable" up
-# 	@echo "Migration Done!"
+migration_up:
+	cd migrations; echo "Inside migrations, Start migration"; \
+	goose postgres "host=localhost port=5432 user=poomipat password=kmir_dev dbname=kmir_dev sslmode=disable" up
+	@echo "Migration Done!"
 
-# migration_down:
-# 	cd migrations; echo "Inside migrations, Start migration"; \
-# 	goose postgres "host=localhost port=5432 user=poomipat password=running_fund_dev dbname=running_fund_dev sslmode=disable" down
-# 	@echo "Migration Done!"
+migration_down:
+	cd migrations; echo "Inside migrations, Start migration"; \
+	goose postgres "host=localhost port=5432 user=poomipat password=kmir_dev dbname=kmir_dev sslmode=disable" down
+	@echo "Migration Done!"
 
-# migration_status:
-# 	cd migrations; echo "Inside migrations, Start migration"; \
-# 	goose postgres "host=localhost port=5432 user=poomipat password=running_fund_dev dbname=running_fund_dev sslmode=disable" status
+migration_status:
+	cd migrations; echo "Inside migrations, Start migration"; \
+	goose postgres "host=localhost port=5432 user=poomipat password=kmir_dev dbname=kmir_dev sslmode=disable" status
 
 
 # Tests

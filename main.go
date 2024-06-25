@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,12 +10,13 @@ import (
 
 	"github.com/poomipat-k/kmir-backend/pkg/database"
 	"github.com/poomipat-k/kmir-backend/pkg/server"
+	"github.com/pressly/goose/v3"
 )
 
 const webPort = "8080"
 
-// //go:embed migrations/*.sql
-// var embedMigrations embed.FS
+//go:embed migrations/*.sql
+var embedMigrations embed.FS
 
 func main() {
 	db := database.ConnectToDB()
@@ -23,16 +25,16 @@ func main() {
 	}
 	defer db.Close()
 
-	// goose.SetBaseFS(embedMigrations)
-	// if err := goose.SetDialect("postgres"); err != nil {
-	// 	log.Println("error to SetDialect")
-	// 	panic(err)
-	// }
+	goose.SetBaseFS(embedMigrations)
+	if err := goose.SetDialect("postgres"); err != nil {
+		log.Println("error to SetDialect")
+		panic(err)
+	}
 
-	// if err := goose.Up(db, "migrations"); err != nil {
-	// 	log.Println("error to goose.Up")
-	// 	panic(err)
-	// }
+	if err := goose.Up(db, "migrations"); err != nil {
+		log.Println("error to goose.Up")
+		panic(err)
+	}
 
 	app := server.Server{}
 
