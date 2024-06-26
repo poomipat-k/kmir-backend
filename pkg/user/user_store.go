@@ -3,6 +3,7 @@ package user
 import (
 	"database/sql"
 	"log/slog"
+	"strings"
 )
 
 type store struct {
@@ -17,7 +18,7 @@ func NewStore(db *sql.DB) *store {
 
 func (s *store) GetUserByUsername(username string) (User, error) {
 	var user User
-	row := s.db.QueryRow(getUserByUsernameSQL, username)
+	row := s.db.QueryRow(getUserByUsernameSQL, strings.ToLower(username))
 	err := row.Scan(&user.Id, &user.Username, &user.Password, &user.UserRole)
 	switch err {
 	case sql.ErrNoRows:

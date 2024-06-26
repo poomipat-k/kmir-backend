@@ -115,6 +115,30 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, http.StatusOK, common.CommonSuccessResponse{Success: true, Message: "log in successfully"})
 }
 
+func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	accessTokenCookie := http.Cookie{
+		Name:     "authToken",
+		Value:    "",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+		Path:     "/api",
+		Expires:  time.Now(),
+	}
+	http.SetCookie(w, &accessTokenCookie)
+	refreshTokenCookie := http.Cookie{
+		Name:     "refreshToken",
+		Value:    "",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+		Path:     "/api/v1/auth",
+		Expires:  time.Now(),
+	}
+	http.SetCookie(w, &refreshTokenCookie)
+	utils.WriteJSON(w, http.StatusOK, common.CommonSuccessResponse{Success: true, Message: "log out successfully"})
+}
+
 func (h *UserHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 	userId, err := utils.GetUsernameFromRequestHeader(r)
 	if err != nil {
