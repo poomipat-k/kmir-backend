@@ -32,6 +32,7 @@ func (app *Server) Routes(db *sql.DB) http.Handler {
 		r.Post("/auth/login", userHandler.Login)
 		r.Get("/auth/current", appMiddleware.IsLoggedIn(userHandler.GetCurrentUser))
 		r.Post("/auth/logout", userHandler.Logout)
+		r.Post("/auth/refresh-token", userHandler.RefreshAccessToken)
 	})
 
 	return mux

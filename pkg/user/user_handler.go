@@ -1,9 +1,12 @@
 package user
 
 import (
+	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -165,7 +168,65 @@ func (h *UserHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *UserHandler) RefreshAccessToken(w http.ResponseWriter, r *http.Request) {
+	refreshToken, err := getRefreshToken(r)
+	if err != nil {
+		utils.ErrorJSON(w, err, "refreshToken", http.StatusUnauthorized)
+		return
+	}
+	claims, ok := refreshToken.Claims.(jwt.MapClaims)
+	if !ok {
+		utils.ErrorJSON(w, errors.New("corrupt refresh token"), "refreshToken", http.StatusUnauthorized)
+		return
+	}
+	userId := fmt.Sprintf("%v", claims["userId"])
+	username := fmt.Sprintf("%v", claims["username"])
+	userRole := fmt.Sprintf("%v", claims["userRole"])
+
+	accessExpiredAtUnix := time.Now().Add(accessExpireDurationMinute * time.Minute).Unix()
+	uid, err := strconv.Atoi(userId)
+	if err != nil {
+		utils.ErrorJSON(w, err, "refreshToken", http.StatusUnauthorized)
+		return
+	}
+	accessToken, err := generateAccessToken(uid, username, userRole, accessExpiredAtUnix)
+	if err != nil {
+		utils.ErrorJSON(w, err, "refreshToken", http.StatusUnauthorized)
+		return
+	}
+	newAccessTokenCookie := http.Cookie{
+		Name:     "authToken",
+		Value:    accessToken,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+		Path:     "/api",
+		Expires:  time.Unix(accessExpiredAtUnix, 0),
+	}
+	http.SetCookie(w, &newAccessTokenCookie)
+	utils.WriteJSON(w, http.StatusOK, common.CommonSuccessResponse{Success: true, Message: "Access token refresh successfully"})
+}
+
 // Private methods
+func getRefreshToken(r *http.Request) (*jwt.Token, error) {
+	cookie, err := r.Cookie("refreshToken")
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
+		// validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(os.Getenv("JWT_REFRESH_TOKEN_SECRET_KEY")), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return token, nil
+}
+
 func generateHashedAndSaltedPassword(password string, saltLen int, delim string) (string, error) {
 	salt := utils.RandAlphaNum(saltLen)
 
