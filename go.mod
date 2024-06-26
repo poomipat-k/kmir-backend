@@ -10,6 +10,11 @@ require (
 )
 
 require (
+	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
+	golang.org/x/crypto v0.24.0 // indirect
+)
+
+require (
 	github.com/lib/pq v1.10.9
 	github.com/mfridman/interpolate v0.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
