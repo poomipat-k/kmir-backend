@@ -143,7 +143,7 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
-	userId, err := utils.GetUsernameFromRequestHeader(r)
+	username, err := utils.GetUsernameFromRequestHeader(r)
 	if err != nil {
 		slog.Error(err.Error())
 		utils.ErrorJSON(w, err, "username", http.StatusUnauthorized)
@@ -155,16 +155,17 @@ func (h *UserHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorJSON(w, err, "username", http.StatusUnauthorized)
 		return
 	}
-	user, err := h.store.GetUserByUsername(userId)
+	user, err := h.store.GetUserByUsername(username)
 	if err != nil {
 		slog.Error(err.Error())
 		utils.ErrorJSON(w, err, "", http.StatusNotFound)
 		return
 	}
 	utils.WriteJSON(w, http.StatusOK, User{
-		Id:       user.Id,
-		Username: user.Username,
-		UserRole: user.UserRole,
+		Id:          user.Id,
+		Username:    user.Username,
+		DisplayName: user.DisplayName,
+		UserRole:    user.UserRole,
 	})
 }
 
