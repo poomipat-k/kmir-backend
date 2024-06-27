@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"net/http"
+	"strconv"
 )
 
 func GetUsernameFromRequestHeader(r *http.Request) (string, error) {
@@ -19,4 +20,13 @@ func GetUserRoleFromRequestHeader(r *http.Request) (string, error) {
 		return "", errors.New("empty userRole")
 	}
 	return r.Header.Get("userRole"), nil
+}
+
+func GetUserIdFromRequestHeader(r *http.Request) (int, error) {
+	strUserId := r.Header.Get("userId")
+	userId, err := strconv.Atoi(strUserId)
+	if err != nil {
+		return 0, err
+	}
+	return userId, nil
 }

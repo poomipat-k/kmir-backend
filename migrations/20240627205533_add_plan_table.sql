@@ -1,0 +1,14 @@
+-- +goose Up
+CREATE TABLE plan (
+  id SERIAL PRIMARY KEY NOT NULL,
+  name VARCHAR(255) UNIQUE NOT NULL,
+  user_id INT NOT NULL REFERENCES users (id),
+  topic VARCHAR(255) NOT NULL,
+  topic_en VARCHAR(255) NOT NULL,
+  goal VARCHAR(512) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
+);
+
+-- +goose Down
+ALTER TABLE plan DROP COLUMN user_id;
+DROP TABLE plan;
