@@ -1,0 +1,30 @@
+services:
+  kmir:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: kmir
+    restart: always
+    ports:
+      - "8080:8080"
+    deploy:
+      mode: replicated
+      replicas: 1
+    env_file:
+      - .env
+
+  postgres:
+    image: 'postgres:16.0'
+    container_name: compose_postgres
+    ports:
+      - "5432:5432"
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      POSTGRES_USER: poomipat
+      POSTGRES_PASSWORD: running_fund_dev
+      POSTGRES_DB: running_fund_dev
+    volumes:
+      - ./db-data/postgres/:/var/lib/postgresql/data/
