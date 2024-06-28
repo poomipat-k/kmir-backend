@@ -46,6 +46,12 @@ func (h *PlanHandler) CanAccessPlanDetails(w http.ResponseWriter, r *http.Reques
 		utils.ErrorJSON(w, err, "userRole", http.StatusUnauthorized)
 		return
 	}
+	if userRole == "admin" {
+		utils.WriteJSON(w, http.StatusOK, common.CommonSuccessResponse{
+			Success: true,
+			Message: "allow admin to access plan details",
+		})
+	}
 
 	planName := chi.URLParam(r, "planName")
 	allow, err := h.store.CanAccessPlanDetails(planName, username)
