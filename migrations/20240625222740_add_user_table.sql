@@ -20,13 +20,13 @@ VALUES
 ('user7', '$2a$10$gI6Po0SLyJDazdS/nYx5FeScn4quG/uKKOTf0eFlMYTQPUeVOl5pK_eitPzQbO', 'PLAN7', 'user'),
 ('user8', '$2a$10$gI6Po0SLyJDazdS/nYx5FeScn4quG/uKKOTf0eFlMYTQPUeVOl5pK_eitPzQbO', 'PLAN8', 'user'),
 ('user9', '$2a$10$gI6Po0SLyJDazdS/nYx5FeScn4quG/uKKOTf0eFlMYTQPUeVOl5pK_eitPzQbO', 'PLAN9', 'user'),
-('user10', '$2a$10$gI6Po0SLyJDazdS/nYx5FeScn4quG/u…OTf0eFlMYTQPUeVOl5pK_eitPzQbO', 'PLAN10', 'user'),
-('user11', '$2a$10$gI6Po0SLyJDazdS/nYx5FeScn4quG/u…OTf0eFlMYTQPUeVOl5pK_eitPzQbO', 'PLAN11', 'user'),
-('user12', '$2a$10$gI6Po0SLyJDazdS/nYx5FeScn4quG/u…OTf0eFlMYTQPUeVOl5pK_eitPzQbO', 'PLAN12', 'user'),
-('user14', '$2a$10$gI6Po0SLyJDazdS/nYx5FeScn4quG/u…OTf0eFlMYTQPUeVOl5pK_eitPzQbO', 'PLAN14', 'user'),
-('user15', '$2a$10$gI6Po0SLyJDazdS/nYx5FeScn4quG/u…OTf0eFlMYTQPUeVOl5pK_eitPzQbO', 'PLAN15', 'user'),
-('adminir', '$2a$10$gI6Po0SLyJDazdS/nYx5FeScn4quG/u…OTf0eFlMYTQPUeVOl5pK_eitPzQbO', 'ADMIN IR', 'admin'),
-('viewer1', '$2a$10$gI6Po0SLyJDazdS/nYx5FeScn4quG/u…OTf0eFlMYTQPUeVOl5pK_eitPzQbO', 'viewer', 'viewer')
+('user10', '$2a$10$gI6Po0SLyJDazdS/nYx5FeScn4quG/uKKOTf0eFlMYTQPUeVOl5pK_eitPzQbO', 'PLAN10', 'user'),
+('user11', '$2a$10$gI6Po0SLyJDazdS/nYx5FeScn4quG/uKKOTf0eFlMYTQPUeVOl5pK_eitPzQbO', 'PLAN11', 'user'),
+('user12', '$2a$10$gI6Po0SLyJDazdS/nYx5FeScn4quG/uKKOTf0eFlMYTQPUeVOl5pK_eitPzQbO', 'PLAN12', 'user'),
+('user14', '$2a$10$gI6Po0SLyJDazdS/nYx5FeScn4quG/uKKOTf0eFlMYTQPUeVOl5pK_eitPzQbO', 'PLAN14', 'user'),
+('user15', '$2a$10$gI6Po0SLyJDazdS/nYx5FeScn4quG/uKKOTf0eFlMYTQPUeVOl5pK_eitPzQbO', 'PLAN15', 'user'),
+('adminir', '$2a$10$gI6Po0SLyJDazdS/nYx5FeScn4quG/uKKOTf0eFlMYTQPUeVOl5pK_eitPzQbO', 'ADMIN IR', 'admin'),
+('viewer1', '$2a$10$gI6Po0SLyJDazdS/nYx5FeScn4quG/uKKOTf0eFlMYTQPUeVOl5pK_eitPzQbO', 'viewer', 'viewer')
 ;
 
 

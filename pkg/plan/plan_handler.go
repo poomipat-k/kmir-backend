@@ -3,6 +3,7 @@ package plan
 import (
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi"
 	"github.com/poomipat-k/kmir-backend/pkg/common"
@@ -25,9 +26,25 @@ func NewPlanHandler(s PlanStore) *PlanHandler {
 }
 
 func (h *PlanHandler) GetAllPreviewPlan(w http.ResponseWriter, r *http.Request) {
+	userRole, err := utils.GetUserRoleFromRequestHeader(r)
+	if userRole == "" {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "userRole", http.StatusUnauthorized)
+		return
+	}
 	plans, err := h.store.GetAllPreviewPlan()
 	if err != nil {
 		utils.ErrorJSON(w, err, "getAllPreviewPlan", http.StatusInternalServerError)
+		return
+	}
+	if userRole == "user" {
+		var filterData []PlanPreview
+		for _, p := range plans {
+			if strings.ToLower(p.Name) != "admin" {
+				filterData = append(filterData, p)
+			}
+		}
+		utils.WriteJSON(w, http.StatusOK, filterData)
 		return
 	}
 	utils.WriteJSON(w, http.StatusOK, plans)
@@ -46,11 +63,12 @@ func (h *PlanHandler) CanAccessPlanDetails(w http.ResponseWriter, r *http.Reques
 		utils.ErrorJSON(w, err, "userRole", http.StatusUnauthorized)
 		return
 	}
-	if userRole == "admin" {
+	if userRole == "admin" || userRole == "viewer" {
 		utils.WriteJSON(w, http.StatusOK, common.CommonSuccessResponse{
 			Success: true,
-			Message: "allow admin to access plan details",
+			Message: "allow admin or viewer to access plan details",
 		})
+		return
 	}
 
 	planName := chi.URLParam(r, "planName")

@@ -26,7 +26,7 @@ VALUES
 ('PLAN12', 12, 'แผนสนับสนุนการสร้างเสริมสุขภาพ ผ่านระบบบริการสุขภาพ', 'Health Promotion in Health Service System Plan', 'Goal 12'),
 ('PLAN14', 13, 'แผนอาหารเพื่อสุขภาวะ', 'Healthy Food Promotion Plan', 'Goal 14'),
 ('PLAN15', 14, 'แผนสร้างเสริมความเข้าใจสุขภาวะ', 'Health Literacy Promotion Plan', 'Goal 15'),
-('Admin', 15, 'ไออาร์', 'IR', 'Goal Admin')
+('ADMIN', 15, 'ไออาร์', 'IR', 'Goal Admin')
 ;
 
 
