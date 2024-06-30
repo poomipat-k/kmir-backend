@@ -25,3 +25,4 @@ go.work.sum
 db-data
 bin/
 notes
+playground.sql
