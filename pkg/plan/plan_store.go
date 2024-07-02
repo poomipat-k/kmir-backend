@@ -55,3 +55,8 @@ func (s *store) CanAccessPlanDetails(planName, username string) (bool, error) {
 	}
 	return true, nil
 }
+
+func (s *store) GetPlanDetails(planName string) (string, error) {
+
+	return "", nil
+}
