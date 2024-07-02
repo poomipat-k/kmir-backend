@@ -34,3 +34,39 @@ plan.updated_at,
 plan.updated_by
 FROM plan WHERE plan.name = $1;
 `
+
+const getPlanScoreDetailsSQL = `
+SELECT
+plan_id,
+criteria_id,
+criteria_order, 
+user_role,
+year,
+score,
+created_at,
+criteria_category,
+criteria_display
+FROM
+(
+SELECT
+assessment_score.plan_id as plan_id,
+assessment_score.assessment_criteria_id as criteria_id,
+assessment_criteria.order_number as criteria_order,
+assessment_score.user_id as user_id,
+users.user_role as user_role,
+year, 
+score, 
+assessment_score.created_at as created_at,
+assessment_criteria.category as criteria_category,
+assessment_criteria.display as criteria_display,
+ROW_NUMBER() OVER (
+PARTITION BY assessment_score.plan_id, assessment_score.user_id, year 
+ORDER BY assessment_score.created_at DESC, assessment_criteria_id ASC) 
+as row_num FROM assessment_score 
+INNER JOIN plan ON plan.id = assessment_score.plan_id
+INNER JOIN assessment_criteria ON assessment_criteria.id = assessment_score.assessment_criteria_id
+INNER JOIN users ON users.id = assessment_score.user_id
+WHERE plan.name = $1
+)
+WHERE row_num <= 7;
+`

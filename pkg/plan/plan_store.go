@@ -85,14 +85,64 @@ func (s *store) GetPlanDetails(planName string) (PlanDetails, error) {
 		&pd.UpdatedAt,
 		&pd.UpdatedBy,
 	)
-
 	if err == sql.ErrNoRows {
-		slog.Error("GetPlanDetails(): no row were returned!")
+		slog.Error("GetPlanDetails() general: no row were returned!")
 		return PlanDetails{}, err
 	}
 	if err != nil {
 		slog.Error(err.Error())
-		return PlanDetails{}, fmt.Errorf("GetPlanDetails() unknown error")
+		return PlanDetails{}, fmt.Errorf("GetPlanDetails() general: unknown error")
 	}
+
+	rows, err := s.db.Query(getPlanScoreDetailsSQL, planName)
+	if err != nil {
+		return PlanDetails{}, err
+	}
+	defer rows.Close()
+
+	var rowsData []AssessmentScoreRow
+	for rows.Next() {
+		var row AssessmentScoreRow
+		err = rows.Scan(&row.PlanId, &row.CriteriaId, &row.CriteriaOrder, &row.UserRole, &row.Year, &row.Score, &row.CreatedAt, &row.CriteriaCategory, &row.CriteriaDisplay)
+		if err != nil {
+			slog.Error(err.Error(), "field", "scan AssessmentScoreRow")
+			return PlanDetails{}, err
+		}
+		rowsData = append(rowsData, row)
+	}
+	err = rows.Err()
+	if err != nil {
+		return PlanDetails{}, err
+	}
+
+	// Add AssessmentCriteria to pd
+	var assessmentCriteriaList []AssessmentCriteria
+	for index, row := range rowsData {
+		if index >= 7 {
+			break
+		}
+		assessmentCriteriaList = append(assessmentCriteriaList, AssessmentCriteria{
+			CriteriaId:  row.CriteriaId,
+			OrderNumber: row.CriteriaOrder,
+			Category:    row.CriteriaCategory,
+			Display:     row.CriteriaDisplay,
+		})
+	}
+	pd.AssessmentCriteria = assessmentCriteriaList
+
+	// Add score details by year
+	var scores []AssessmentScore
+	for _, row := range rowsData {
+		scores = append(scores, AssessmentScore{
+			PlanId:        row.PlanId,
+			CriteriaOrder: row.CriteriaOrder,
+			UserRole:      row.UserRole,
+			Year:          row.Year,
+			Score:         row.Score,
+			CreatedAt:     row.CreatedAt,
+		})
+	}
+	pd.AssessmentScore = scores
+
 	return pd, nil
 }

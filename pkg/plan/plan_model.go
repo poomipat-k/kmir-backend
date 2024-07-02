@@ -20,7 +20,7 @@ type PlanDetails struct {
 	ReadinessWillingnessUpdatedAt *time.Time           `json:"readinessWillingnessUpdatedAt,omitempty"`
 	ReadinessWillingnessUpdatedBy *string              `json:"readinessWillingnessUpdatedBy,omitempty"`
 	AssessmentCriteria            []AssessmentCriteria `json:"assessmentCriteria,omitempty"`
-	AssessmentScore               *AssessmentScore     `json:"assessmentScore,omitempty"`
+	AssessmentScore               []AssessmentScore    `json:"assessmentScore,omitempty"`
 	IrGoalType                    *string              `json:"irGoalType,omitempty"`
 	IrGoalTypeUpdatedAt           *time.Time           `json:"irGoalTypeUpdatedAt,omitempty"`
 	IrGoalTypeUpdatedBy           *string              `json:"irGoalTypeUpdatedBy,omitempty"`
@@ -41,28 +41,29 @@ type PlanDetails struct {
 }
 
 type AssessmentCriteria struct {
-	Id          int    `json:"id,omitempty"`
+	CriteriaId  int    `json:"criteriaId,omitempty"`
 	OrderNumber int    `json:"orderNumber,omitempty"`
 	Category    string `json:"category,omitempty"`
 	Display     string `json:"display,omitempty"`
 }
 
 type AssessmentScore struct {
-	YearSummary []YearScore `json:"yearSummary,omitempty"`
+	PlanId        int        `json:"planId,omitempty"`
+	CriteriaOrder int        `json:"criteriaOrder,omitempty"`
+	UserRole      string     `json:"userRole,omitempty"`
+	Year          int        `json:"year,omitempty"`
+	Score         int        `json:"score,omitempty"`
+	CreatedAt     *time.Time `json:"createdAt,omitempty"`
 }
 
-type YearScore struct {
-	Year  int          `json:"year,omitempty"`
-	User  ScoreSummary `json:"user,omitempty"`
-	Admin ScoreSummary `json:"admin,omitempty"`
-}
-
-type ScoreSummary struct {
-	Scores    []Score    `json:"scores,omitempty"`
-	CreatedAt *time.Time `json:"createdAt,omitempty"`
-}
-
-type Score struct {
-	CriteriaId int `json:"criteriaId,omitempty"`
-	Score      int `json:"score"`
+type AssessmentScoreRow struct {
+	PlanId           int        `json:"planId,omitempty"`
+	CriteriaId       int        `json:"criteriaId,omitempty"`
+	CriteriaOrder    int        `json:"criteriaOrder,omitempty"`
+	UserRole         string     `json:"userRole,omitempty"`
+	Year             int        `json:"year,omitempty"`
+	Score            int        `json:"score,omitempty"`
+	CreatedAt        *time.Time `json:"createdAt,omitempty"`
+	CriteriaCategory string     `json:"criteriaCategory,omitempty"`
+	CriteriaDisplay  string     `json:"criteriaDisplay,omitempty"`
 }
