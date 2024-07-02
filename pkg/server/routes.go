@@ -40,6 +40,7 @@ func (app *Server) Routes(db *sql.DB) http.Handler {
 
 		r.Get("/plan/preview/all", appMiddleware.IsLoggedIn(planHandler.GetAllPreviewPlan))
 		r.Get("/plan/access/{planName}", appMiddleware.IsLoggedIn(planHandler.CanAccessPlanDetails))
+		r.Get("/plan/details/{planName}", appMiddleware.IsUser(planHandler.GetPlanDetails))
 
 	})
 

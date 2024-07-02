@@ -35,6 +35,35 @@ func IsLoggedIn(next http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
+func IsUser(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		accessToken, err := getAccessToken(r)
+		if err != nil {
+			utils.ErrorJSON(w, err, "authToken", http.StatusUnauthorized)
+			return
+		}
+
+		claims, ok := accessToken.Claims.(jwt.MapClaims)
+		if ok {
+			userId := fmt.Sprintf("%v", claims["userId"])
+			username := fmt.Sprintf("%v", claims["username"])
+			userRole := fmt.Sprintf("%v", claims["userRole"])
+			if userRole != "user" {
+				utils.ErrorJSON(w, errors.New("permission denied"), "authToken", http.StatusForbidden)
+				return
+			}
+			r.Header.Set("userId", userId)
+			r.Header.Set("username", username)
+			r.Header.Set("userRole", userRole)
+			next(w, r)
+		} else {
+			utils.ErrorJSON(w, errors.New("corrupt token"), "authToken", http.StatusUnauthorized)
+			return
+
+		}
+	})
+}
+
 func getAccessToken(r *http.Request) (*jwt.Token, error) {
 	// Cookie
 	cookie, err := r.Cookie("authToken")

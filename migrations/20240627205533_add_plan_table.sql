@@ -25,6 +25,7 @@ CREATE TABLE plan (
   contact_person_updated_at TIMESTAMP WITH TIME ZONE,
   contact_person_updated_by INT REFERENCES users (id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
   updated_by INT NOT NULL REFERENCES users (id)
 );
 

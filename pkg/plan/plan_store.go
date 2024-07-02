@@ -56,7 +56,43 @@ func (s *store) CanAccessPlanDetails(planName, username string) (bool, error) {
 	return true, nil
 }
 
-func (s *store) GetPlanDetails(planName string) (string, error) {
+func (s *store) GetPlanDetails(planName string) (PlanDetails, error) {
+	var pd PlanDetails
+	planRow := s.db.QueryRow(getPlanDetailsSQL, planName)
+	err := planRow.Scan(
+		&pd.PlanId,
+		&pd.Name,
+		&pd.Topic,
+		&pd.TopicEn,
+		&pd.ReadinessWillingness,
+		&pd.ReadinessWillingnessUpdatedAt,
+		&pd.ReadinessWillingnessUpdatedBy,
+		&pd.IrGoalType,
+		&pd.IrGoalTypeUpdatedAt,
+		&pd.IrGoalTypeUpdatedBy,
+		&pd.IrGoalDetails,
+		&pd.IrGoalDetailsUpdatedAt,
+		&pd.IrGoalDetailsUpdatedBy,
+		&pd.ProposedActivity,
+		&pd.ProposedActivityUpdatedAt,
+		&pd.ProposedActivityUpdatedBy,
+		&pd.PlanNote,
+		&pd.PlanNoteUpdatedAt,
+		&pd.PlanNoteUpdatedBy,
+		&pd.ContactPerson,
+		&pd.ContactPersonUpdatedAt,
+		&pd.ContactPersonUpdatedBy,
+		&pd.UpdatedAt,
+		&pd.UpdatedBy,
+	)
 
-	return "", nil
+	if err == sql.ErrNoRows {
+		slog.Error("GetPlanDetails(): no row were returned!")
+		return PlanDetails{}, err
+	}
+	if err != nil {
+		slog.Error(err.Error())
+		return PlanDetails{}, fmt.Errorf("GetPlanDetails() unknown error")
+	}
+	return pd, nil
 }

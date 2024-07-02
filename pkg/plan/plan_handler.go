@@ -14,7 +14,7 @@ import (
 type PlanStore interface {
 	GetAllPreviewPlan() ([]PlanPreview, error)
 	CanAccessPlanDetails(planName, username string) (bool, error)
-	GetPlanDetails(planName string) (string, error)
+	GetPlanDetails(planName string) (PlanDetails, error)
 }
 
 type PlanHandler struct {
