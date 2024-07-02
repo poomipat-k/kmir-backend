@@ -14,7 +14,7 @@ import (
 type PlanStore interface {
 	GetAllPreviewPlan() ([]PlanPreview, error)
 	CanAccessPlanDetails(planName, username string) (bool, error)
-	GetPlanDetails(planName string) (PlanDetails, error)
+	GetPlanDetails(planName, username string) (PlanDetails, error)
 }
 
 type PlanHandler struct {
@@ -65,7 +65,13 @@ func (h *PlanHandler) GetPlanDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	planName := chi.URLParam(r, "planName")
-	data, err := h.store.GetPlanDetails(planName)
+	username, err := utils.GetUsernameFromRequestHeader(r)
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "username", http.StatusUnauthorized)
+		return
+	}
+	data, err := h.store.GetPlanDetails(planName, username)
 	if err != nil {
 		slog.Error(err.Error())
 		utils.ErrorJSON(w, err, "planName", http.StatusBadRequest)

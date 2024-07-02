@@ -56,9 +56,9 @@ func (s *store) CanAccessPlanDetails(planName, username string) (bool, error) {
 	return true, nil
 }
 
-func (s *store) GetPlanDetails(planName string) (PlanDetails, error) {
+func (s *store) GetPlanDetails(planName, username string) (PlanDetails, error) {
 	var pd PlanDetails
-	planRow := s.db.QueryRow(getPlanDetailsSQL, planName)
+	planRow := s.db.QueryRow(getPlanDetailsSQL, planName, username)
 	err := planRow.Scan(
 		&pd.PlanId,
 		&pd.Name,
@@ -94,6 +94,7 @@ func (s *store) GetPlanDetails(planName string) (PlanDetails, error) {
 		return PlanDetails{}, fmt.Errorf("GetPlanDetails() general: unknown error")
 	}
 
+	// If reach here it means the user match the plan so no need to check username in the query
 	rows, err := s.db.Query(getPlanScoreDetailsSQL, planName)
 	if err != nil {
 		return PlanDetails{}, err

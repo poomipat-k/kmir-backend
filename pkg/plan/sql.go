@@ -32,7 +32,9 @@ plan.contact_person_updated_at,
 plan.contact_person_updated_by,
 plan.updated_at,
 plan.updated_by
-FROM plan WHERE plan.name = $1;
+FROM plan 
+INNER JOIN users ON users.id = plan.user_id
+WHERE plan.name = $1 AND users.username = $2;
 `
 
 const getPlanScoreDetailsSQL = `
