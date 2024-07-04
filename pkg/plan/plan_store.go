@@ -56,9 +56,15 @@ func (s *store) CanAccessPlanDetails(planName, username string) (bool, error) {
 	return true, nil
 }
 
-func (s *store) GetPlanDetails(planName, username string) (PlanDetails, error) {
+func (s *store) GetPlanDetails(planName, userRole string, username string) (PlanDetails, error) {
 	var pd PlanDetails
-	planRow := s.db.QueryRow(getPlanDetailsSQL, planName, username)
+	var planRow *sql.Row
+	if userRole == "admin" || userRole == "viewer" {
+		planRow = s.db.QueryRow(getPlanDetailsForAdminViewSQL, planName)
+	} else {
+		planRow = s.db.QueryRow(getPlanDetailsSQL, planName, username)
+	}
+
 	err := planRow.Scan(
 		&pd.PlanId,
 		&pd.Name,

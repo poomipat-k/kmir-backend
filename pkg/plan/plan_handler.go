@@ -1,7 +1,6 @@
 package plan
 
 import (
-	"errors"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -14,7 +13,7 @@ import (
 type PlanStore interface {
 	GetAllPreviewPlan() ([]PlanPreview, error)
 	CanAccessPlanDetails(planName, username string) (bool, error)
-	GetPlanDetails(planName, username string) (PlanDetails, error)
+	GetPlanDetails(planName, userRole string, username string) (PlanDetails, error)
 }
 
 type PlanHandler struct {
@@ -59,19 +58,14 @@ func (h *PlanHandler) GetPlanDetails(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorJSON(w, err, "userRole", http.StatusUnauthorized)
 		return
 	}
-	if userRole != "user" {
-		slog.Error(err.Error())
-		utils.ErrorJSON(w, errors.New("userRole is not a user"), "userRole", http.StatusForbidden)
-		return
-	}
-	planName := chi.URLParam(r, "planName")
 	username, err := utils.GetUsernameFromRequestHeader(r)
 	if err != nil {
 		slog.Error(err.Error())
 		utils.ErrorJSON(w, err, "username", http.StatusUnauthorized)
 		return
 	}
-	data, err := h.store.GetPlanDetails(planName, username)
+	planName := chi.URLParam(r, "planName")
+	data, err := h.store.GetPlanDetails(planName, userRole, username)
 	if err != nil {
 		slog.Error(err.Error())
 		utils.ErrorJSON(w, err, "planName", http.StatusBadRequest)
