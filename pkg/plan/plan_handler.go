@@ -151,6 +151,6 @@ func (h *PlanHandler) CanEditPlan(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.WriteJSON(w, http.StatusOK, common.CommonSuccessResponse{
 		Success: true,
-		Message: "allow to access plan details",
+		Message: "allow to edit plan details",
 	})
 }
