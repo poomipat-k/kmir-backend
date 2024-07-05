@@ -56,6 +56,22 @@ func (s *store) CanAccessPlanDetails(planName, username string) (bool, error) {
 	return true, nil
 }
 
+func (s *store) CanEditPlan(planName, username string) (bool, error) {
+	var planId int
+	row := s.db.QueryRow(canEditPlanSQL, planName, username)
+	err := row.Scan(&planId)
+
+	if err == sql.ErrNoRows {
+		slog.Error("CanEditPlan(): no row were returned!")
+		return false, err
+	}
+	if err != nil {
+		slog.Error(err.Error())
+		return false, fmt.Errorf("CanEditPlan() unknown error")
+	}
+	return true, nil
+}
+
 func (s *store) GetPlanDetails(planName, userRole string, username string) (PlanDetails, error) {
 	var pd PlanDetails
 	var planRow *sql.Row

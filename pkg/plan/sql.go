@@ -6,6 +6,10 @@ const canAccessPlanDetailsSQL = `SELECT plan.id as plan_id
 FROM plan INNER JOIN users ON plan.user_id = users.id 
 WHERE plan.name = $1 AND users.username = $2;`
 
+const canEditPlanSQL = `SELECT plan.id as plan_id
+FROM plan INNER JOIN users ON plan.user_id = users.id 
+WHERE plan.name = $1 AND users.username = $2;`
+
 const getPlanDetailsSQL = `
 SELECT
 plan.id as plan_id,

@@ -1,6 +1,7 @@
 package plan
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -14,6 +15,7 @@ type PlanStore interface {
 	GetAllPreviewPlan() ([]PlanPreview, error)
 	CanAccessPlanDetails(planName, username string) (bool, error)
 	GetPlanDetails(planName, userRole string, username string) (PlanDetails, error)
+	CanEditPlan(planName, username string) (bool, error)
 }
 
 type PlanHandler struct {
@@ -97,6 +99,44 @@ func (h *PlanHandler) CanAccessPlanDetails(w http.ResponseWriter, r *http.Reques
 
 	planName := chi.URLParam(r, "planName")
 	allow, err := h.store.CanAccessPlanDetails(planName, username)
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "", http.StatusNotFound)
+		return
+	}
+	if !allow {
+		utils.WriteJSON(w, http.StatusForbidden, common.CommonSuccessResponse{
+			Success: false,
+			Message: "user permission denied",
+		})
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, common.CommonSuccessResponse{
+		Success: true,
+		Message: "allow to access plan details",
+	})
+}
+
+func (h *PlanHandler) CanEditPlan(w http.ResponseWriter, r *http.Request) {
+	username, err := utils.GetUsernameFromRequestHeader(r)
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "username", http.StatusUnauthorized)
+		return
+	}
+	userRole, err := utils.GetUserRoleFromRequestHeader(r)
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "userRole", http.StatusUnauthorized)
+		return
+	}
+	if userRole != "user" {
+		utils.ErrorJSON(w, errors.New("no edit permission"), "userRole", http.StatusForbidden)
+		return
+	}
+
+	planName := chi.URLParam(r, "planName")
+	allow, err := h.store.CanEditPlan(planName, username)
 	if err != nil {
 		slog.Error(err.Error())
 		utils.ErrorJSON(w, err, "", http.StatusNotFound)
