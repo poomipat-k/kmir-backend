@@ -38,8 +38,26 @@ INTO plan (
 ) 
 VALUES 
 ('PLAN1', 1,'แผนควบคุมยาสูบ', 'Tobacco Control', 'Exchange knowledge with international audiences and participating in the discussion in the global and regional networks', 
-'ready 1', '2024-06-30 10:46:35.093141+00', 'user', 'type 1', '2024-06-30 10:46:35.093141+00', 'user', 'goal details 1', '2024-06-30 10:46:35.093141+00', 'user', 'activity 1', '2024-06-30 10:46:35.093141+00', 'user', 
-'plan note 1', '2024-06-30 10:46:35.093141+00', 'user', 'contact 1', '2024-06-30 10:46:35.093141+00', 'user', 'user'), 
+'Korem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eu turpis molestie, dictum est a, mattis tellus. Sed dignissim, metus nec fringilla accumsan, risus sem sollicitudin lacus, ut interdum tellus elit sed risus. Maecenas eget condimentum velit, sit amet feugiat lectus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Praesent auctor purus luctus enim egestas, ac scelerisque ante pulvinar. Donec ut rhoncus ex. Suspendisse ac rhoncus nil, eu tempor urna. Curabitur vel bibendum lorem. Morbi convallis convallis diam sit amet lacinia. Aliquam in elementum tellus.', 
+'2024-06-30 10:46:35.093141+00', 'user', 'type 1', '2024-06-30 10:46:35.093141+00', 'user', 
+'Enhance ThaiHealth''s national policy advocacy for tobacco control by integrating global best practices and strengthening compliance with the WHO Framework Convention on Tobacco Control (FCTC), with a focus on emerging challenges such as e-cigarettes', 
+'2024-06-30 10:46:35.093141+00', 'user', 
+'2025
+Curabitur tempor quis eros tempus lacinia. Nam bibendum pellentesque quam a convallis. Sed ut vulputate nisi. Integer in felis sed leo vestibulum venenatis. Suspendisse quis arcu sem. Aenean feugiat ex eu vestibulum vestibulum. Morbi a eleifend magna. Nam metus lacus, porttitor eu mauris a, blandit ultrices nibh. Mauris sit amet magna non ligula vestibulum eleifend. Nulla varius volutpat turpis sed lacinia. Nam eget mi in purus lobortis eleifend. Sed nec ante dictum sem condimentum ullamcorper quis venenatis nisi. Proin vitae facilisis nisi, ac posuere leo.
+
+2026
+Curabitur tempor quis eros tempus lacinia. Nam bibendum pellentesque quam a convallis. Sed ut vulputate nisi. Integer in felis sed leo vestibulum venenatis. Suspendisse quis arcu sem. Aenean feugiat ex eu vestibulum vestibulum. Morbi a eleifend magna. Nam metus lacus, porttitor eu mauris a, blandit ultrices nibh. Mauris sit amet magna non ligula vestibulum eleifend. Nulla varius volutpat turpis sed lacinia. Nam eget mi in purus lobortis eleifend. Sed nec ante dictum sem condimentum ullamcorper quis venenatis nisi. Proin vitae facilisis nisi, ac posuere leo.', 
+'2024-06-30 10:46:35.093141+00', 'user', 
+'plan note 1 Korem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eu turpis molestie, dictum est a, mattis tellus. Sed dignissim, metus nec fringilla accumsan, risus sem sollicitudin lacus, ut interdum tellus elit sed risus. Maecenas eget condimentum velit, sit amet feugiat lectus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Praesent auctor purus luctus enim egestas, ac scelerisque ante pulvinar. Donec ut rhoncus ex. Suspendisse ac rhoncus nil, eu tempor urna. Curabitur vel bibendum lorem. Morbi convallis convallis diam sit amet lacinia. Aliquam in elementum tellus.
+
+Curabitur tempor quis eros tempus lacinia. Nam bibendum pellentesque quam a convallis. Sed ut vulputate nisi. Integer in felis sed leo vestibulum venenatis. Suspendisse quis arcu sem. Aenean feugiat ex eu vestibulum vestibulum. Morbi a eleifend magna. Nam metus lacus, porttitor eu mauris a, blandit ultrices nibh. Mauris sit amet magna non ligula vestibulum eleifend. Nulla varius volutpat turpis sed lacinia. Nam eget mi in purus lobortis eleifend. Sed nec ante dictum sem condimentum ullamcorper quis venenatis nisi. Proin vitae facilisis nisi, ac posuere leo.
+
+download report at https://phethai.org/th/about-us', 
+'2024-06-30 10:46:35.093141+00', 'user', 
+'นายรังสรร มั่นคง (กอล์ฟ) 
+ผู้เชี่ยวชาญด้านวิเทศสัมพันธ์  สำนักพัฒนาภาคีสัมพันธ์และวิเทศสัมพันธ์ (สภส.)
+Email: Rungsun@thaihealth.or.th', 
+'2024-06-30 10:46:35.093141+00', 'user', 'user'), 
 ('PLAN2', 2,'แผนควบคุมเครื่องดื่มแอลกอฮอล์และสิ่งเสพติด', 'Alcohol and Substance Abuse Control', 'Goal 2',
 'ready 2', '2024-06-30 10:46:35.093141+00', 'user', 'type 2', '2024-06-30 10:46:35.093141+00', 'user', 'goal details 2', '2024-06-30 10:46:35.093141+00', 'user', 'activity 2','2024-06-30 10:46:35.093141+00', 'user',
 'plan note 2', '2024-06-30 10:46:35.093141+00', 'user', 'contact 2', '2024-06-30 10:46:35.093141+00', 'user', 'user'),
