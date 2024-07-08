@@ -3,7 +3,9 @@ package plan
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"log/slog"
+	"time"
 )
 
 type store struct {
@@ -168,4 +170,22 @@ func (s *store) GetPlanDetails(planName, userRole string, username string) (Plan
 	pd.AssessmentScore = scores
 
 	return pd, nil
+}
+
+func (s *store) EditPlan(planName, username string) (bool, error) {
+	now := time.Now()
+	log.Println("==now", now)
+	// var planId int
+	// row := s.db.QueryRow(canEditPlanSQL, planName, username)
+	// err := row.Scan(&planId)
+
+	// if err == sql.ErrNoRows {
+	// 	slog.Error("CanEditPlan(): no row were returned!")
+	// 	return false, err
+	// }
+	// if err != nil {
+	// 	slog.Error(err.Error())
+	// 	return false, fmt.Errorf("CanEditPlan() unknown error")
+	// }
+	return true, nil
 }

@@ -1,6 +1,8 @@
 package plan
 
-import "time"
+import (
+	"time"
+)
 
 type PlanPreview struct {
 	Id      int    `json:"id,omitempty"`
@@ -69,5 +71,22 @@ type AssessmentScoreRow struct {
 }
 
 type EditPlanRequest struct {
-	PlanName string `json:"planName,omitempty"`
+	PlanName             string            `json:"planName,omitempty"`
+	ReadinessWillingness *string           `json:"readinessWillingness,omitempty"`
+	AssessmentScore      *EditScoreRequest `json:"assessmentScore,omitempty"`
+	IrGoalType           *string           `json:"irGoalType,omitempty"`
+	IrGoalDetails        *string           `json:"irGoalDetails,omitempty"`
+	ProposedActivity     *string           `json:"proposedActivity,omitempty"`
+	PlanNote             *string           `json:"planNote,omitempty"`
+	ContactPerson        *string           `json:"contactPerson,omitempty"`
+}
+
+type EditScoreRequest struct {
+	Q1 *int `json:"q1,omitempty"`
+	Q2 *int `json:"q2,omitempty"`
+	Q3 *int `json:"q3,omitempty"`
+	Q4 *int `json:"q4,omitempty"`
+	Q5 *int `json:"q5,omitempty"`
+	Q6 *int `json:"q6,omitempty"`
+	Q7 *int `json:"q7,omitempty"`
 }

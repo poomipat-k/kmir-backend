@@ -156,10 +156,23 @@ func (h *PlanHandler) CanEditPlan(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PlanHandler) EditPlan(w http.ResponseWriter, r *http.Request) {
-	// var payload GeneratePasswordRequest
-	// err := utils.ReadJSON(w, r, &payload)
-	// if err != nil {
-	// 	utils.ErrorJSON(w, err, "payload", http.StatusBadRequest)
-	// 	return
-	// }
+	var payload EditPlanRequest
+	err := utils.ReadJSON(w, r, &payload)
+	if err != nil {
+		utils.ErrorJSON(w, err, "payload", http.StatusBadRequest)
+		return
+	}
+	username, err := utils.GetUsernameFromRequestHeader(r)
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "username", http.StatusUnauthorized)
+		return
+	}
+	currentPlanData, err := h.store.GetPlanDetails(payload.PlanName, "user", username)
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "planName", http.StatusBadRequest)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, currentPlanData)
 }
