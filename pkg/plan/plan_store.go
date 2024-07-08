@@ -175,7 +175,7 @@ func (s *store) GetPlanDetails(planName, userRole string, username string) (Plan
 	return pd, nil
 }
 
-func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole string) error {
+func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole string, username string) error {
 	// start transaction
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -186,42 +186,52 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 	}
 	defer tx.Rollback()
 
+	currentPlanData, err := s.GetPlanDetails(payload.PlanName, "user", username)
+	if err != nil {
+		slog.Error(err.Error())
+		return err
+	}
+
 	now := time.Now()
 	log.Println("==now", now)
 	// Check if each params exist
 	var sqlParams []string
 	sqlValues := []any{}
 	totalParamsCount := 0
-	if payload.ReadinessWillingness != nil {
+	if payload.ReadinessWillingness != nil && *payload.ReadinessWillingness != *currentPlanData.ReadinessWillingness {
 		sqlParams = append(sqlParams, "readiness_willingness", "readiness_willingness_updated_at", "readiness_willingness_updated_by")
 		sqlValues = append(sqlValues, payload.ReadinessWillingness, now, userRole)
 		totalParamsCount += 3
 	}
-	if payload.IrGoalType != nil {
+	if payload.IrGoalType != nil && *payload.IrGoalType != *currentPlanData.IrGoalType {
 		sqlParams = append(sqlParams, "ir_goal_type", "ir_goal_type_updated_at", "ir_goal_type_updated_by")
 		sqlValues = append(sqlValues, payload.IrGoalType, now, userRole)
 		totalParamsCount += 3
 	}
-	if payload.IrGoalDetails != nil {
+	if payload.IrGoalDetails != nil && *payload.IrGoalDetails != *currentPlanData.IrGoalDetails {
 		sqlParams = append(sqlParams, "ir_goal_details", "ir_goal_details_updated_at", "ir_goal_details_updated_by")
 		sqlValues = append(sqlValues, payload.IrGoalDetails, now, userRole)
 		totalParamsCount += 3
 	}
-	if payload.ProposedActivity != nil {
+	if payload.ProposedActivity != nil && *payload.ProposedActivity != *currentPlanData.ProposedActivity {
 		sqlParams = append(sqlParams, "proposed_activity", "proposed_activity_updated_at", "proposed_activity_updated_by")
 		sqlValues = append(sqlValues, payload.ProposedActivity, now, userRole)
 		totalParamsCount += 3
 	}
-	if payload.PlanNote != nil {
+	if payload.PlanNote != nil && *payload.PlanNote != *currentPlanData.PlanNote {
 		sqlParams = append(sqlParams, "plan_note", "plan_note_updated_at", "plan_note_updated_by")
 		sqlValues = append(sqlValues, payload.PlanNote, now, userRole)
 		totalParamsCount += 3
 	}
-	if payload.ContactPerson != nil {
+	if payload.ContactPerson != nil && *payload.ContactPerson != *currentPlanData.ContactPerson {
 		sqlParams = append(sqlParams, "contact_person", "contact_person_updated_at", "contact_person_updated_by")
 		sqlValues = append(sqlValues, payload.ContactPerson, now, userRole)
 		totalParamsCount += 3
 	}
+	if totalParamsCount == 0 {
+		return errors.New("updated plan failed: no new values detected")
+	}
+
 	var updateSQLBuilder strings.Builder
 	updateSQLBuilder.WriteString("UPDATE plan SET ")
 	n := len(sqlParams)
