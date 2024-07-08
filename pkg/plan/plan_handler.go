@@ -154,3 +154,12 @@ func (h *PlanHandler) CanEditPlan(w http.ResponseWriter, r *http.Request) {
 		Message: "allow to edit plan details",
 	})
 }
+
+func (h *PlanHandler) EditPlan(w http.ResponseWriter, r *http.Request) {
+	// var payload GeneratePasswordRequest
+	// err := utils.ReadJSON(w, r, &payload)
+	// if err != nil {
+	// 	utils.ErrorJSON(w, err, "payload", http.StatusBadRequest)
+	// 	return
+	// }
+}

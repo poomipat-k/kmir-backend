@@ -43,6 +43,8 @@ func (app *Server) Routes(db *sql.DB) http.Handler {
 		r.Get("/plan/details/{planName}", appMiddleware.IsLoggedIn(planHandler.GetPlanDetails))
 		r.Get("/plan/edit/{planName}", appMiddleware.IsLoggedIn(planHandler.CanEditPlan))
 
+		r.Patch("/plan/{planName}", appMiddleware.IsUser(planHandler.EditPlan))
+
 	})
 
 	return mux

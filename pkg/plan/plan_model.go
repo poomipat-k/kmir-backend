@@ -67,3 +67,7 @@ type AssessmentScoreRow struct {
 	CriteriaCategory string     `json:"criteriaCategory,omitempty"`
 	CriteriaDisplay  string     `json:"criteriaDisplay,omitempty"`
 }
+
+type EditPlanRequest struct {
+	PlanName string `json:"planName,omitempty"`
+}
