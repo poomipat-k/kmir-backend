@@ -175,21 +175,21 @@ func (s *store) GetPlanDetails(planName, userRole string, username string) (Plan
 	return pd, nil
 }
 
-func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole string, username string) error {
+func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole string, username string) (string, error) {
 	// start transaction
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return "transaction", err
 	}
 	defer tx.Rollback()
 
 	currentPlanData, err := s.GetPlanDetails(payload.PlanName, "user", username)
 	if err != nil {
 		slog.Error(err.Error())
-		return err
+		return "load_current_plan", err
 	}
 
 	now := time.Now()
@@ -229,7 +229,7 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 		totalParamsCount += 3
 	}
 	if totalParamsCount == 0 {
-		return errors.New("updated plan failed: no new values detected")
+		return "no_changes", errors.New("updated plan failed: no new values detected")
 	}
 
 	var updateSQLBuilder strings.Builder
@@ -250,28 +250,28 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 	stmt, err := tx.Prepare(updateSQL)
 	if err != nil {
 		slog.Error("error prepare add update plan sql", "error", err)
-		return err
+		return "prepare_sql", err
 	}
 	sqlValues = append(sqlValues, planName)
 	result, err := stmt.ExecContext(ctx, sqlValues...)
 	if err != nil {
 		slog.Error("execContext on update plan sql", "error", err)
-		return err
+		return "exec_sql", err
 	}
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		slog.Error("execContext on update plan sql", "error", err)
-		return err
+		return "rows_affected", err
 	}
 	log.Println("==rowsAffected", rowsAffected)
 	if rowsAffected == 0 {
-		return errors.New("no plan is updated")
+		return "zero_row_affected", errors.New("no plan is updated")
 	}
 
 	err = tx.Commit()
 	if err != nil {
 		slog.Error("commit error", "err", err.Error())
-		return err
+		return "commit", err
 	}
-	return nil
+	return "", nil
 }
