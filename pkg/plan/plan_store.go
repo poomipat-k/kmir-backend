@@ -208,17 +208,17 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 		totalParamsCount += 3
 	}
 	if payload.ProposedActivity != nil {
-		sqlParams = append(sqlParams, "proposed_activity_details", "proposed_activity_details_updated_at", "proposed_activity_details_updated_by")
+		sqlParams = append(sqlParams, "proposed_activity", "proposed_activity_updated_at", "proposed_activity_updated_by")
 		sqlValues = append(sqlValues, payload.ProposedActivity, now, userRole)
 		totalParamsCount += 3
 	}
 	if payload.PlanNote != nil {
-		sqlParams = append(sqlParams, "plan_note_details", "plan_note_details_updated_at", "plan_note_details_updated_by")
+		sqlParams = append(sqlParams, "plan_note", "plan_note_updated_at", "plan_note_updated_by")
 		sqlValues = append(sqlValues, payload.PlanNote, now, userRole)
 		totalParamsCount += 3
 	}
 	if payload.ContactPerson != nil {
-		sqlParams = append(sqlParams, "contact_person_details", "contact_person_details_updated_at", "contact_person_details_updated_by")
+		sqlParams = append(sqlParams, "contact_person", "contact_person_updated_at", "contact_person_updated_by")
 		sqlValues = append(sqlValues, payload.ContactPerson, now, userRole)
 		totalParamsCount += 3
 	}
