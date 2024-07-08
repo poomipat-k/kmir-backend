@@ -1,10 +1,13 @@
 package plan
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"log/slog"
+	"strings"
 	"time"
 )
 
@@ -172,20 +175,93 @@ func (s *store) GetPlanDetails(planName, userRole string, username string) (Plan
 	return pd, nil
 }
 
-func (s *store) EditPlan(planName, username string) (bool, error) {
+func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole string) error {
+	// start transaction
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
 	now := time.Now()
 	log.Println("==now", now)
-	// var planId int
-	// row := s.db.QueryRow(canEditPlanSQL, planName, username)
-	// err := row.Scan(&planId)
+	// Check if each params exist
+	var sqlParams []string
+	sqlValues := []any{}
+	totalParamsCount := 0
+	if payload.ReadinessWillingness != nil {
+		sqlParams = append(sqlParams, "readiness_willingness", "readiness_willingness_updated_at", "readiness_willingness_updated_by")
+		sqlValues = append(sqlValues, payload.ReadinessWillingness, now, userRole)
+		totalParamsCount += 3
+	}
+	if payload.IrGoalType != nil {
+		sqlParams = append(sqlParams, "ir_goal_type", "ir_goal_type_updated_at", "ir_goal_type_updated_by")
+		sqlValues = append(sqlValues, payload.IrGoalType, now, userRole)
+		totalParamsCount += 3
+	}
+	if payload.IrGoalDetails != nil {
+		sqlParams = append(sqlParams, "ir_goal_details", "ir_goal_details_updated_at", "ir_goal_details_updated_by")
+		sqlValues = append(sqlValues, payload.IrGoalDetails, now, userRole)
+		totalParamsCount += 3
+	}
+	if payload.ProposedActivity != nil {
+		sqlParams = append(sqlParams, "proposed_activity_details", "proposed_activity_details_updated_at", "proposed_activity_details_updated_by")
+		sqlValues = append(sqlValues, payload.ProposedActivity, now, userRole)
+		totalParamsCount += 3
+	}
+	if payload.PlanNote != nil {
+		sqlParams = append(sqlParams, "plan_note_details", "plan_note_details_updated_at", "plan_note_details_updated_by")
+		sqlValues = append(sqlValues, payload.PlanNote, now, userRole)
+		totalParamsCount += 3
+	}
+	if payload.ContactPerson != nil {
+		sqlParams = append(sqlParams, "contact_person_details", "contact_person_details_updated_at", "contact_person_details_updated_by")
+		sqlValues = append(sqlValues, payload.ContactPerson, now, userRole)
+		totalParamsCount += 3
+	}
+	var updateSQLBuilder strings.Builder
+	updateSQLBuilder.WriteString("UPDATE plan SET ")
+	n := len(sqlParams)
+	for i := 0; i < n; i++ {
+		updateSQLBuilder.WriteString(sqlParams[i])
+		updateSQLBuilder.WriteString(fmt.Sprintf(" = $%d", i+1))
+		if i < n-1 {
+			updateSQLBuilder.WriteString(", ")
+		}
+	}
+	updateSQLBuilder.WriteString(fmt.Sprintf(" WHERE plan.name = $%d;", n+1))
+	updateSQL := updateSQLBuilder.String()
 
-	// if err == sql.ErrNoRows {
-	// 	slog.Error("CanEditPlan(): no row were returned!")
-	// 	return false, err
-	// }
-	// if err != nil {
-	// 	slog.Error(err.Error())
-	// 	return false, fmt.Errorf("CanEditPlan() unknown error")
-	// }
-	return true, nil
+	log.Println("===updateSQL:", updateSQL)
+
+	stmt, err := tx.Prepare(updateSQL)
+	if err != nil {
+		slog.Error("error prepare add update plan sql", "error", err)
+		return err
+	}
+	sqlValues = append(sqlValues, planName)
+	result, err := stmt.ExecContext(ctx, sqlValues...)
+	if err != nil {
+		slog.Error("execContext on update plan sql", "error", err)
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		slog.Error("execContext on update plan sql", "error", err)
+		return err
+	}
+	log.Println("==rowsAffected", rowsAffected)
+	if rowsAffected == 0 {
+		return errors.New("no plan is updated")
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		slog.Error("commit error", "err", err.Error())
+		return err
+	}
+	return nil
 }
