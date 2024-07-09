@@ -92,6 +92,7 @@ func (s *store) GetPlanDetails(planName, userRole string, username string) (Plan
 		&pd.Name,
 		&pd.Topic,
 		&pd.TopicEn,
+		&pd.TopicShort,
 		&pd.ReadinessWillingness,
 		&pd.ReadinessWillingnessUpdatedAt,
 		&pd.ReadinessWillingnessUpdatedBy,

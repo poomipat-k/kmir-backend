@@ -18,6 +18,7 @@ type PlanDetails struct {
 	Name                          string               `json:"name,omitempty"`
 	Topic                         string               `json:"topic,omitempty"`
 	TopicEn                       string               `json:"topicEn,omitempty"`
+	TopicShort                    string               `json:"topicShort,omitempty"`
 	ReadinessWillingness          *string              `json:"readinessWillingness,omitempty"`
 	ReadinessWillingnessUpdatedAt *time.Time           `json:"readinessWillingnessUpdatedAt,omitempty"`
 	ReadinessWillingnessUpdatedBy *string              `json:"readinessWillingnessUpdatedBy,omitempty"`
