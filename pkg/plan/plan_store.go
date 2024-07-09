@@ -240,6 +240,7 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 		var addScoreBuilder strings.Builder
 		scoreValues := []any{}
 		addScoreBuilder.WriteString("INSERT INTO assessment_score (plan_id, user_id, assessment_criteria_id, score, year, created_at) VALUES ")
+		// check if there is at least 1 score changed
 		for i := 0; i < 7; i++ {
 			addScoreBuilder.WriteString(fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d)",
 				i*6+1,
@@ -249,12 +250,14 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 				i*6+5,
 				i*6+6,
 			))
-			score := payload.AssessmentScore[fmt.Sprintf("q_%d", currentPlanData.AssessmentCriteria[i].CriteriaId)]
+			newScore := payload.AssessmentScore[fmt.Sprintf("q_%d", currentPlanData.AssessmentCriteria[i].CriteriaId)]
+			oldScore := getOldScore(currentPlanData, userRole, now.Year(), i+1)
+			scoreChanged = scoreChanged || (newScore != oldScore)
 			scoreValues = append(scoreValues,
 				currentPlanData.PlanId,
 				userId,
 				currentPlanData.AssessmentCriteria[i].CriteriaId,
-				score,
+				newScore,
 				now.Year(),
 				now,
 			)
@@ -262,6 +265,7 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 				addScoreBuilder.WriteString(", ")
 			}
 		}
+
 		addScoreBuilder.WriteString(";")
 		stmt, err := tx.Prepare(addScoreBuilder.String())
 		if err != nil {
@@ -281,7 +285,6 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 		if rowsAffected == 0 {
 			return "zero_row_affected_score", errors.New("no plan is updated")
 		}
-		scoreChanged = true
 	}
 	if totalParamsCount == 0 && !scoreChanged {
 		return "no_changes", errors.New("updated plan failed: no new values detected")
@@ -326,4 +329,20 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 		return "commit", err
 	}
 	return "", nil
+}
+
+func getOldScore(currentPlanData PlanDetails, userRole string, year int, targetCriteriaOrder int) int {
+	oldScore := 0
+	if currentPlanData.AssessmentScore != nil {
+		for j := 0; j < len(currentPlanData.AssessmentScore); j++ {
+			scoreItem := currentPlanData.AssessmentScore[j]
+			if scoreItem.PlanId == currentPlanData.PlanId &&
+				scoreItem.CriteriaOrder == targetCriteriaOrder &&
+				scoreItem.UserRole == userRole &&
+				scoreItem.Year == year {
+				oldScore = scoreItem.Score
+			}
+		}
+	}
+	return oldScore
 }

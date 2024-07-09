@@ -176,11 +176,17 @@ func (h *PlanHandler) UserEditPlan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// validation
+	name, err := validateEditPlanPayload(payload)
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, name, http.StatusBadRequest)
+		return
+	}
 	if payload.AssessmentScore != nil {
 		name, err := validateScore(payload.AssessmentScore)
 		if err != nil {
 			slog.Error(err.Error())
-			utils.ErrorJSON(w, err, name, http.StatusUnauthorized)
+			utils.ErrorJSON(w, err, name, http.StatusBadRequest)
 			return
 		}
 	}

@@ -1,6 +1,8 @@
 package plan
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func validateScore(scores map[string]int) (string, error) {
 	for i := 1; i <= 7; i++ {
@@ -13,6 +15,12 @@ func validateScore(scores map[string]int) (string, error) {
 			return key, ScoreValueOutOfRangeError{}
 		}
 	}
+	return "", nil
+}
 
+func validateEditPlanPayload(payload EditPlanRequest) (string, error) {
+	if payload.ReadinessWillingness != nil && *payload.ReadinessWillingness == "" {
+		return "readinessWillingness", ReadinessWillingnessRequiredError{}
+	}
 	return "", nil
 }
