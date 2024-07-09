@@ -293,12 +293,10 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 		n := len(sqlParams)
 		for i := 0; i < n; i++ {
 			updateSQLBuilder.WriteString(sqlParams[i])
-			updateSQLBuilder.WriteString(fmt.Sprintf(" = $%d", i+1))
-			if i < n-1 {
-				updateSQLBuilder.WriteString(", ")
-			}
+			updateSQLBuilder.WriteString(fmt.Sprintf(" = $%d, ", i+1))
 		}
-		updateSQLBuilder.WriteString(fmt.Sprintf(" WHERE plan.name = $%d;", n+1))
+		updateSQLBuilder.WriteString(fmt.Sprintf("updated_at = $%d", n+1))
+		updateSQLBuilder.WriteString(fmt.Sprintf(" WHERE plan.name = $%d;", n+2))
 		updateSQL := updateSQLBuilder.String()
 
 		stmt, err := tx.Prepare(updateSQL)
@@ -306,7 +304,7 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 			slog.Error("error prepare add update plan sql", "error", err)
 			return "prepare_sql_plan", err
 		}
-		sqlValues = append(sqlValues, planName)
+		sqlValues = append(sqlValues, now, planName)
 		result, err := stmt.ExecContext(ctx, sqlValues...)
 		if err != nil {
 			slog.Error("execContext on update plan sql", "error", err)
