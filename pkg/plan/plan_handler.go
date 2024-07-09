@@ -2,6 +2,7 @@ package plan
 
 import (
 	"errors"
+	"log"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -169,17 +170,25 @@ func (h *PlanHandler) UserEditPlan(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorJSON(w, err, "username", http.StatusUnauthorized)
 		return
 	}
-	currentPlanData, err := h.store.GetPlanDetails(payload.PlanName, "user", username)
-	if err != nil {
-		slog.Error(err.Error())
-		utils.ErrorJSON(w, err, "planName", http.StatusBadRequest)
-		return
+	// validation
+	log.Println("==map score", payload.AssessmentScore)
+	if payload.AssessmentScore != nil {
+		name, err := validateScore(payload.AssessmentScore)
+		if err != nil {
+			slog.Error(err.Error())
+			utils.ErrorJSON(w, err, name, http.StatusUnauthorized)
+			return
+		}
 	}
+
 	errName, err := h.store.EditPlan(payload.PlanName, payload, "user", username)
 	if err != nil {
 		slog.Error(err.Error())
 		utils.ErrorJSON(w, err, errName, http.StatusInternalServerError)
 		return
 	}
-	utils.WriteJSON(w, http.StatusOK, currentPlanData)
+	utils.WriteJSON(w, http.StatusOK, common.CommonSuccessResponse{
+		Success: true,
+		Message: "update plan success",
+	})
 }

@@ -203,6 +203,10 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 		sqlValues = append(sqlValues, payload.ReadinessWillingness, now, userRole)
 		totalParamsCount += 3
 	}
+	if payload.AssessmentScore != nil {
+
+	}
+
 	if payload.IrGoalType != nil && *payload.IrGoalType != *currentPlanData.IrGoalType {
 		sqlParams = append(sqlParams, "ir_goal_type", "ir_goal_type_updated_at", "ir_goal_type_updated_by")
 		sqlValues = append(sqlValues, payload.IrGoalType, now, userRole)
