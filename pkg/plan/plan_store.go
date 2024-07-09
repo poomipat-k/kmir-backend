@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"log/slog"
 	"strings"
 	"time"
+
+	"github.com/poomipat-k/kmir-backend/pkg/utils"
 )
 
 type store struct {
@@ -175,7 +176,7 @@ func (s *store) GetPlanDetails(planName, userRole string, username string) (Plan
 	return pd, nil
 }
 
-func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole string, username string) (string, error) {
+func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole string, username string, userId int) (string, error) {
 	// start transaction
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -192,8 +193,11 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 		return "load_current_plan", err
 	}
 
-	now := time.Now()
-	log.Println("==now", now)
+	loc, err := utils.GetTimeLocation()
+	if err != nil {
+		return "location", err
+	}
+	now := time.Now().In(loc)
 	// Check if each params exist
 	var sqlParams []string
 	sqlValues := []any{}
@@ -202,9 +206,6 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 		sqlParams = append(sqlParams, "readiness_willingness", "readiness_willingness_updated_at", "readiness_willingness_updated_by")
 		sqlValues = append(sqlValues, payload.ReadinessWillingness, now, userRole)
 		totalParamsCount += 3
-	}
-	if payload.AssessmentScore != nil {
-
 	}
 
 	if payload.IrGoalType != nil && *payload.IrGoalType != *currentPlanData.IrGoalType {
@@ -232,44 +233,92 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 		sqlValues = append(sqlValues, payload.ContactPerson, now, userRole)
 		totalParamsCount += 3
 	}
-	if totalParamsCount == 0 {
+	scoreChanged := false
+	if payload.AssessmentScore != nil {
+		// add all 7 rows to  assessment_score table
+		var addScoreBuilder strings.Builder
+		scoreValues := []any{}
+		addScoreBuilder.WriteString("INSERT INTO assessment_score (plan_id, user_id, assessment_criteria_id, score, year, created_at) VALUES ")
+		for i := 0; i < 7; i++ {
+			addScoreBuilder.WriteString(fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d)",
+				i*6+1,
+				i*6+2,
+				i*6+3,
+				i*6+4,
+				i*6+5,
+				i*6+6,
+			))
+			score := payload.AssessmentScore[fmt.Sprintf("q_%d", currentPlanData.AssessmentCriteria[i].CriteriaId)]
+			scoreValues = append(scoreValues,
+				currentPlanData.PlanId,
+				userId,
+				currentPlanData.AssessmentCriteria[i].CriteriaId,
+				score,
+				now.Year(),
+				now,
+			)
+			if i < 6 {
+				addScoreBuilder.WriteString(", ")
+			}
+		}
+		addScoreBuilder.WriteString(";")
+		stmt, err := tx.Prepare(addScoreBuilder.String())
+		if err != nil {
+			slog.Error("error prepare add insert assessment_score sql", "error", err)
+			return "prepare_sql_score", err
+		}
+		result, err := stmt.ExecContext(ctx, scoreValues...)
+		if err != nil {
+			slog.Error("execContext on assessment_score sql", "error", err)
+			return "exec_sql_score", err
+		}
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			slog.Error("execContext on insert assessment_score sql", "error", err)
+			return "rows_affected_score", err
+		}
+		if rowsAffected == 0 {
+			return "zero_row_affected_score", errors.New("no plan is updated")
+		}
+		scoreChanged = true
+	}
+	if totalParamsCount == 0 && !scoreChanged {
 		return "no_changes", errors.New("updated plan failed: no new values detected")
 	}
 
-	var updateSQLBuilder strings.Builder
-	updateSQLBuilder.WriteString("UPDATE plan SET ")
-	n := len(sqlParams)
-	for i := 0; i < n; i++ {
-		updateSQLBuilder.WriteString(sqlParams[i])
-		updateSQLBuilder.WriteString(fmt.Sprintf(" = $%d", i+1))
-		if i < n-1 {
-			updateSQLBuilder.WriteString(", ")
+	if totalParamsCount > 0 {
+		var updateSQLBuilder strings.Builder
+		updateSQLBuilder.WriteString("UPDATE plan SET ")
+		n := len(sqlParams)
+		for i := 0; i < n; i++ {
+			updateSQLBuilder.WriteString(sqlParams[i])
+			updateSQLBuilder.WriteString(fmt.Sprintf(" = $%d", i+1))
+			if i < n-1 {
+				updateSQLBuilder.WriteString(", ")
+			}
 		}
-	}
-	updateSQLBuilder.WriteString(fmt.Sprintf(" WHERE plan.name = $%d;", n+1))
-	updateSQL := updateSQLBuilder.String()
+		updateSQLBuilder.WriteString(fmt.Sprintf(" WHERE plan.name = $%d;", n+1))
+		updateSQL := updateSQLBuilder.String()
 
-	log.Println("===updateSQL:", updateSQL)
-
-	stmt, err := tx.Prepare(updateSQL)
-	if err != nil {
-		slog.Error("error prepare add update plan sql", "error", err)
-		return "prepare_sql", err
-	}
-	sqlValues = append(sqlValues, planName)
-	result, err := stmt.ExecContext(ctx, sqlValues...)
-	if err != nil {
-		slog.Error("execContext on update plan sql", "error", err)
-		return "exec_sql", err
-	}
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		slog.Error("execContext on update plan sql", "error", err)
-		return "rows_affected", err
-	}
-	log.Println("==rowsAffected", rowsAffected)
-	if rowsAffected == 0 {
-		return "zero_row_affected", errors.New("no plan is updated")
+		stmt, err := tx.Prepare(updateSQL)
+		if err != nil {
+			slog.Error("error prepare add update plan sql", "error", err)
+			return "prepare_sql_plan", err
+		}
+		sqlValues = append(sqlValues, planName)
+		result, err := stmt.ExecContext(ctx, sqlValues...)
+		if err != nil {
+			slog.Error("execContext on update plan sql", "error", err)
+			return "exec_sql_plan", err
+		}
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			slog.Error("execContext on update plan sql", "error", err)
+			return "rows_affected_plan", err
+		}
+		if rowsAffected == 0 {
+			return "zero_row_affected_plan", errors.New("no plan is updated")
+		}
 	}
 
 	err = tx.Commit()

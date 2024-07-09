@@ -17,7 +17,7 @@ type PlanStore interface {
 	CanAccessPlanDetails(planName, username string) (bool, error)
 	GetPlanDetails(planName, userRole string, username string) (PlanDetails, error)
 	CanEditPlan(planName, username string) (bool, error)
-	EditPlan(planName string, payload EditPlanRequest, userRole string, username string) (string, error)
+	EditPlan(planName string, payload EditPlanRequest, userRole string, username string, userId int) (string, error)
 }
 
 type PlanHandler struct {
@@ -164,6 +164,12 @@ func (h *PlanHandler) UserEditPlan(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorJSON(w, err, "payload", http.StatusBadRequest)
 		return
 	}
+	userId, err := utils.GetUserIdFromRequestHeader(r)
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "userId", http.StatusUnauthorized)
+		return
+	}
 	username, err := utils.GetUsernameFromRequestHeader(r)
 	if err != nil {
 		slog.Error(err.Error())
@@ -181,7 +187,7 @@ func (h *PlanHandler) UserEditPlan(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	errName, err := h.store.EditPlan(payload.PlanName, payload, "user", username)
+	errName, err := h.store.EditPlan(payload.PlanName, payload, "user", username, userId)
 	if err != nil {
 		slog.Error(err.Error())
 		utils.ErrorJSON(w, err, errName, http.StatusInternalServerError)
