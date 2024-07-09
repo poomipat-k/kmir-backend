@@ -2,7 +2,6 @@ package plan
 
 import (
 	"errors"
-	"log"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -177,7 +176,6 @@ func (h *PlanHandler) UserEditPlan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// validation
-	log.Println("==map score", payload.AssessmentScore)
 	if payload.AssessmentScore != nil {
 		name, err := validateScore(payload.AssessmentScore)
 		if err != nil {
