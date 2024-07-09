@@ -22,5 +22,20 @@ func validateEditPlanPayload(payload EditPlanRequest) (string, error) {
 	if payload.ReadinessWillingness != nil && *payload.ReadinessWillingness == "" {
 		return "readinessWillingness", ReadinessWillingnessRequiredError{}
 	}
+	if payload.IrGoalType != nil && *payload.IrGoalType == "" {
+		return "irGoalType", IrGoalTypeRequiredError{}
+	}
+	if payload.IrGoalDetails != nil && *payload.IrGoalDetails == "" {
+		return "irGoalDetails", IrGoalDetailsRequiredError{}
+	}
+	if payload.ProposedActivity != nil && *payload.ProposedActivity == "" {
+		return "proposedActivity", ProposedActivityRequiredError{}
+	}
+	if payload.PlanNote != nil && *payload.PlanNote == "" {
+		return "planNote", PlanNoteRequiredError{}
+	}
+	if payload.ContactPerson != nil && *payload.ContactPerson == "" {
+		return "contactPerson", ContactPersonRequiredError{}
+	}
 	return "", nil
 }
