@@ -174,6 +174,31 @@ func (s *store) GetPlanDetails(planName, userRole string, username string) (Plan
 	}
 	pd.AssessmentScore = scores
 
+	// Get all assessment_criteria if not already exists
+	if pd.AssessmentCriteria == nil {
+		assessmentRows, err := s.db.Query(getAllAssessmentCriteriaSQL)
+		if err != nil {
+			return PlanDetails{}, err
+		}
+		defer assessmentRows.Close()
+
+		var assessmentCriteriaData []AssessmentCriteria
+		for assessmentRows.Next() {
+			var assessmentCri AssessmentCriteria
+			err = assessmentRows.Scan(&assessmentCri.Category, &assessmentCri.CriteriaId, &assessmentCri.Display, &assessmentCri.OrderNumber)
+			if err != nil {
+				slog.Error(err.Error(), "field", "scan assessmentCriteriaRows")
+				return PlanDetails{}, err
+			}
+			assessmentCriteriaData = append(assessmentCriteriaData, assessmentCri)
+		}
+		err = assessmentRows.Err()
+		if err != nil {
+			return PlanDetails{}, err
+		}
+		pd.AssessmentCriteria = assessmentCriteriaData
+	}
+
 	return pd, nil
 }
 

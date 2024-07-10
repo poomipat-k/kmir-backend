@@ -42,6 +42,8 @@ INNER JOIN users ON users.id = plan.user_id
 WHERE plan.name = $1 AND users.username = $2;
 `
 
+const getAllAssessmentCriteriaSQL = "SELECT category, id, display, order_number FROM assessment_criteria LIMIT 7;"
+
 const getPlanDetailsForAdminViewSQL = `
 SELECT
 plan.id as plan_id,
