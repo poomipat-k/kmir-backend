@@ -62,6 +62,8 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorJSON(w, err, "payload", http.StatusBadRequest)
 		return
 	}
+	payload.Username = strings.ToLower(payload.Username)
+
 	name, err := validateLoginPayload(payload)
 	if err != nil {
 		utils.ErrorJSON(w, err, name, http.StatusBadRequest)
