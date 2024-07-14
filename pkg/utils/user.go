@@ -19,7 +19,7 @@ func GetUserRoleFromRequestHeader(r *http.Request) (string, error) {
 	if userRole == "" {
 		return "", errors.New("empty userRole")
 	}
-	return r.Header.Get("userRole"), nil
+	return userRole, nil
 }
 
 func GetUserIdFromRequestHeader(r *http.Request) (int, error) {

@@ -62,6 +62,8 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorJSON(w, err, "payload", http.StatusBadRequest)
 		return
 	}
+	payload.Username = strings.ToLower(payload.Username)
+
 	name, err := validateLoginPayload(payload)
 	if err != nil {
 		utils.ErrorJSON(w, err, name, http.StatusBadRequest)
@@ -152,7 +154,7 @@ func (h *UserHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 	userRole, err := utils.GetUserRoleFromRequestHeader(r)
 	if userRole == "" {
 		slog.Error(err.Error())
-		utils.ErrorJSON(w, err, "username", http.StatusUnauthorized)
+		utils.ErrorJSON(w, err, "userRole", http.StatusUnauthorized)
 		return
 	}
 	user, err := h.store.GetUserByUsername(username)

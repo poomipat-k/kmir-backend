@@ -1,0 +1,41 @@
+package plan
+
+import (
+	"fmt"
+)
+
+func validateScore(scores map[string]int) (string, error) {
+	for i := 1; i <= 7; i++ {
+		key := fmt.Sprintf("q_%d", i)
+		val, exist := scores[key]
+		if !exist {
+			return key, ScoreRequiredError{}
+		}
+		if val < 1 || val > 10 {
+			return key, ScoreValueOutOfRangeError{}
+		}
+	}
+	return "", nil
+}
+
+func validateEditPlanPayload(payload EditPlanRequest) (string, error) {
+	if payload.ReadinessWillingness != nil && *payload.ReadinessWillingness == "" {
+		return "readinessWillingness", ReadinessWillingnessRequiredError{}
+	}
+	if payload.IrGoalType != nil && *payload.IrGoalType == "" {
+		return "irGoalType", IrGoalTypeRequiredError{}
+	}
+	if payload.IrGoalDetails != nil && *payload.IrGoalDetails == "" {
+		return "irGoalDetails", IrGoalDetailsRequiredError{}
+	}
+	if payload.ProposedActivity != nil && *payload.ProposedActivity == "" {
+		return "proposedActivity", ProposedActivityRequiredError{}
+	}
+	if payload.PlanNote != nil && *payload.PlanNote == "" {
+		return "planNote", PlanNoteRequiredError{}
+	}
+	if payload.ContactPerson != nil && *payload.ContactPerson == "" {
+		return "contactPerson", ContactPersonRequiredError{}
+	}
+	return "", nil
+}

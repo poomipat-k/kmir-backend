@@ -39,6 +39,11 @@ func (app *Server) Routes(db *sql.DB) http.Handler {
 		r.Post("/auth/refresh-token", userHandler.RefreshAccessToken)
 
 		r.Get("/plan/preview/all", appMiddleware.IsLoggedIn(planHandler.GetAllPreviewPlan))
+		r.Get("/plan/access/{planName}", appMiddleware.IsLoggedIn(planHandler.CanAccessPlanDetails))
+		r.Get("/plan/details/{planName}", appMiddleware.IsLoggedIn(planHandler.GetPlanDetails))
+		r.Get("/plan/edit/{planName}", appMiddleware.IsLoggedIn(planHandler.CanEditPlan))
+
+		r.Patch("/plan", appMiddleware.IsUser(planHandler.UserEditPlan))
 
 	})
 
