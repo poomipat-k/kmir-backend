@@ -27,7 +27,9 @@ CREATE TABLE plan (
   contact_person_updated_by VARCHAR(16),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
-  updated_by VARCHAR(16)
+  updated_by VARCHAR(16),
+  admin_note TEXT,
+  for_admin BOOLEAN DEFAULT false
 );
 
 INSERT 
@@ -100,7 +102,7 @@ Email: Rungsun@thaihealth.or.th',
 'plan note 15', '2024-06-30 10:46:35.093141+00', 'user', 'contact 15', '2024-06-30 10:46:35.093141+00', 'user', 'user')
 ;
 
-INSERT INTO plan (name, user_id,  topic, topic_en, topic_short, goal, updated_by) VALUES ('ADMIN', 15, 'แผนพัฒนาระบบและกลไกสนับสนุนเพื่อการสร้างเสริมสุขภาพ', 'Health Promotion Mechanism Development Plan', 'International Relations','Goal Admin', 'admin');
+INSERT INTO plan (name, user_id,  topic, topic_en, topic_short, goal, updated_by, for_admin) VALUES ('ADMIN', 15, 'แผนพัฒนาระบบและกลไกสนับสนุนเพื่อการสร้างเสริมสุขภาพ', 'Health Promotion Mechanism Development Plan', 'International Relations','Goal Admin', 'admin', true);
 
 
 -- +goose Down
