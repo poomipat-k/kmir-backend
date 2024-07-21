@@ -44,6 +44,7 @@ func (app *Server) Routes(db *sql.DB) http.Handler {
 		r.Get("/plan/edit/{planName}", appMiddleware.IsLoggedIn(planHandler.CanEditPlan))
 
 		r.Get("/admin/plans", appMiddleware.IsAdmin(planHandler.GetAllPlanDetails))
+		r.Post("/admin/scores", appMiddleware.IsAdmin(planHandler.AdminGetScores))
 
 		r.Patch("/plan", appMiddleware.IsUser(planHandler.UserEditPlan))
 

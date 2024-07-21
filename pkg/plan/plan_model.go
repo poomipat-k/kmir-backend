@@ -78,12 +78,13 @@ type AssessmentCriteria struct {
 }
 
 type AssessmentScore struct {
-	PlanId        int        `json:"planId,omitempty"`
-	CriteriaOrder int        `json:"criteriaOrder,omitempty"`
-	UserRole      string     `json:"userRole,omitempty"`
-	Year          int        `json:"year,omitempty"`
-	Score         int        `json:"score,omitempty"`
-	CreatedAt     *time.Time `json:"createdAt,omitempty"`
+	PlanId           int        `json:"planId,omitempty"`
+	CriteriaOrder    int        `json:"criteriaOrder,omitempty"`
+	CriteriaCategory string     `json:"criteriaCategory,omitempty"`
+	UserRole         string     `json:"userRole,omitempty"`
+	Year             int        `json:"year,omitempty"`
+	Score            int        `json:"score,omitempty"`
+	CreatedAt        *time.Time `json:"createdAt,omitempty"`
 }
 
 type AssessmentScoreRow struct {
@@ -107,4 +108,10 @@ type EditPlanRequest struct {
 	ProposedActivity     *string        `json:"proposedActivity,omitempty"`
 	PlanNote             *string        `json:"planNote,omitempty"`
 	ContactPerson        *string        `json:"contactPerson,omitempty"`
+}
+
+type AdminGetScoresRequest struct {
+	FromYear int    `json:"fromYear,omitempty"`
+	ToYear   int    `json:"toYear,omitempty"`
+	Plan     string `json:"plan,omitempty"`
 }

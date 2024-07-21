@@ -403,6 +403,144 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 	return "", nil
 }
 
+func (s *store) AdminGetScores(fromYear, toYear int, plan string) ([]AssessmentScore, error) {
+	sqlStmt := prepareAdminGetScoresSQL(plan)
+	sqlValues, err := prepareAdminGetScoresSQLValues(fromYear, toYear, plan)
+	if err != nil {
+		return nil, err
+	}
+	stmt, err := s.db.Prepare(sqlStmt)
+	if err != nil {
+		slog.Error("error prepare AdminGetScores sql", "error", err)
+		return nil, err
+	}
+	rows, err := stmt.Query(sqlValues...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var rowData []AssessmentScoreRow
+	for rows.Next() {
+		var row AssessmentScoreRow
+		err = rows.Scan(&row.PlanId, &row.CriteriaId, &row.CriteriaOrder, &row.UserRole, &row.Year, &row.Score, &row.CriteriaCategory, &row.CreatedAt)
+		if err != nil {
+			slog.Error(err.Error(), "field", "scan AssessmentScoreRow")
+			return nil, err
+		}
+		rowData = append(rowData, row)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+	// only send useful params
+	var scores []AssessmentScore
+	for _, row := range rowData {
+		scores = append(scores, AssessmentScore{
+			PlanId:           row.PlanId,
+			CriteriaOrder:    row.CriteriaOrder,
+			CriteriaCategory: row.CriteriaCategory,
+			UserRole:         row.UserRole,
+			Year:             row.Year,
+			Score:            row.Score,
+			CreatedAt:        row.CreatedAt,
+		})
+	}
+	return scores, nil
+}
+
+func prepareAdminGetScoresSQL(plan string) string {
+	var sqlStmt string
+	if plan != "all" {
+		sqlStmt = `
+		SELECT
+		plan_id,
+		criteria_id,
+		criteria_order, 
+		user_role,
+		year,
+		score,
+		criteria_category,
+		created_at
+		FROM
+		(
+		SELECT
+		assessment_score.plan_id as plan_id,
+		assessment_score.assessment_criteria_id as criteria_id,
+		assessment_criteria.order_number as criteria_order,
+		assessment_score.user_id as user_id,
+		users.user_role as user_role,
+		year, 
+		score, 
+		assessment_criteria.category as criteria_category,
+		assessment_score.created_at as created_at,
+		ROW_NUMBER() OVER (
+		PARTITION BY assessment_score.plan_id, assessment_score.user_id, year 
+		ORDER BY assessment_score.created_at DESC, assessment_criteria_id ASC) 
+		as row_num FROM assessment_score 
+		INNER JOIN plan ON plan.id = assessment_score.plan_id
+		INNER JOIN assessment_criteria ON assessment_criteria.id = assessment_score.assessment_criteria_id
+		INNER JOIN users ON users.id = assessment_score.user_id
+		WHERE plan.name = $1
+		)
+		WHERE row_num <= 7 AND created_at >= $2 AND created_at < $3
+		;
+		`
+	} else {
+		sqlStmt = `
+		SELECT
+		plan_id,
+		criteria_id,
+		criteria_order, 
+		user_role,
+		year,
+		score,
+		criteria_category,
+		created_at
+		FROM
+		(
+		SELECT
+		assessment_score.plan_id as plan_id,
+		assessment_score.assessment_criteria_id as criteria_id,
+		assessment_criteria.order_number as criteria_order,
+		assessment_score.user_id as user_id,
+		users.user_role as user_role,
+		year, 
+		score, 
+		assessment_criteria.category as criteria_category,
+		assessment_score.created_at as created_at,
+		ROW_NUMBER() OVER (
+		PARTITION BY assessment_score.plan_id, assessment_score.user_id, year 
+		ORDER BY assessment_score.created_at DESC, assessment_criteria_id ASC) 
+		as row_num FROM assessment_score 
+		INNER JOIN plan ON plan.id = assessment_score.plan_id
+		INNER JOIN assessment_criteria ON assessment_criteria.id = assessment_score.assessment_criteria_id
+		INNER JOIN users ON users.id = assessment_score.user_id
+		)
+		WHERE row_num <= 7 AND created_at >= $1 AND created_at < $2
+		;
+		`
+	}
+	return sqlStmt
+}
+
+func prepareAdminGetScoresSQLValues(fromYear, toYear int, plan string) ([]any, error) {
+	sqlValues := []any{}
+	if plan != "all" {
+		sqlValues = append(sqlValues, plan)
+	}
+	loc, err := utils.GetTimeLocation()
+	if err != nil {
+		return nil, err
+	}
+	fromDate := time.Date(fromYear, time.Month(1), 1, 0, 0, 0, 0, loc)
+	toDate := time.Date(toYear+1, time.Month(1), 1, 0, 0, 0, 0, loc)
+	sqlValues = append(sqlValues, fromDate)
+	sqlValues = append(sqlValues, toDate)
+	return sqlValues, nil
+}
+
 func getOldScore(currentPlanData PlanDetails, userRole string, year int, targetCriteriaOrder int) int {
 	oldScore := 0
 	if currentPlanData.AssessmentScore != nil {

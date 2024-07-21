@@ -18,6 +18,7 @@ type PlanStore interface {
 	CanEditPlan(planName, username string) (bool, error)
 	EditPlan(planName string, payload EditPlanRequest, userRole string, username string, userId int) (string, error)
 	GetAllPlanDetails() ([]AdminDashboardPlanDetailsRow, error)
+	AdminGetScores(fromYear, toYear int, plan string) ([]AssessmentScore, error)
 }
 
 type PlanHandler struct {
@@ -83,6 +84,23 @@ func (h *PlanHandler) GetAllPlanDetails(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		slog.Error(err.Error())
 		utils.ErrorJSON(w, err, "", http.StatusInternalServerError)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, data)
+}
+
+func (h *PlanHandler) AdminGetScores(w http.ResponseWriter, r *http.Request) {
+	var payload AdminGetScoresRequest
+	err := utils.ReadJSON(w, r, &payload)
+	if err != nil {
+		utils.ErrorJSON(w, err, "payload", http.StatusBadRequest)
+		return
+	}
+	// validate payload
+	data, err := h.store.AdminGetScores(payload.FromYear, payload.ToYear, payload.Plan)
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "store", http.StatusInternalServerError)
 		return
 	}
 	utils.WriteJSON(w, http.StatusOK, data)
