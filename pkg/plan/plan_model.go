@@ -43,21 +43,31 @@ type PlanDetails struct {
 	UpdatedBy                     *string              `json:"updatedBy,omitempty"`
 }
 
-type AdminDashboardPlanDetails struct {
-	PlanId                    int               `json:"planId,omitempty"`
-	Name                      string            `json:"name,omitempty"`
-	Topic                     string            `json:"topic,omitempty"`
-	TopicEn                   string            `json:"topicEn,omitempty"`
-	TopicShort                string            `json:"topicShort,omitempty"`
-	AssessmentScore           []AssessmentScore `json:"assessmentScore,omitempty"`
-	ProposedActivity          *string           `json:"proposedActivity,omitempty"`
-	ProposedActivityUpdatedAt *time.Time        `json:"proposedActivityUpdatedAt,omitempty"`
-	ProposedActivityUpdatedBy *string           `json:"proposedActivityUpdatedBy,omitempty"`
-	PlanNote                  *string           `json:"planNote,omitempty"`
-	PlanNoteUpdatedAt         *time.Time        `json:"planNoteUpdatedAt,omitempty"`
-	PlanNoteUpdatedBy         *string           `json:"planNoteUpdatedBy,omitempty"`
-	UpdatedAt                 *time.Time        `json:"updatedAt,omitempty"`
-	UpdatedBy                 *string           `json:"updatedBy,omitempty"`
+type AdminDashboardPlanDetailsRow struct {
+	PlanId           int               `json:"planId,omitempty"`
+	Name             string            `json:"name,omitempty"`
+	Topic            string            `json:"topic,omitempty"`
+	TopicEn          string            `json:"topicEn,omitempty"`
+	TopicShort       string            `json:"topicShort,omitempty"`
+	AssessmentScore  []AssessmentScore `json:"assessmentScore,omitempty"`
+	ProposedActivity *string           `json:"proposedActivity,omitempty"`
+	PlanNote         *string           `json:"planNote,omitempty"`
+	AdminNote        *string           `json:"adminNote,omitempty"`
+	// Field to detect change logs
+	UpdatedAt                     *time.Time `json:"updatedAt,omitempty"`
+	UpdatedBy                     *string    `json:"updatedBy,omitempty"`
+	ReadinessWillingnessUpdatedAt *time.Time `json:"readinessWillingnessUpdatedAt,omitempty"`
+	ReadinessWillingnessUpdatedBy *string    `json:"readinessWillingnessUpdatedBy,omitempty"`
+	IrGoalTypeUpdatedAt           *time.Time `json:"irGoalTypeUpdatedAt,omitempty"`
+	IrGoalTypeUpdatedBy           *string    `json:"irGoalTypeUpdatedBy,omitempty"`
+	IrGoalDetailsUpdatedAt        *time.Time `json:"irGoalDetailsUpdatedAt,omitempty"`
+	IrGoalDetailsUpdatedBy        *string    `json:"irGoalDetailsUpdatedBy,omitempty"`
+	ProposedActivityUpdatedAt     *time.Time `json:"proposedActivityUpdatedAt,omitempty"`
+	ProposedActivityUpdatedBy     *string    `json:"proposedActivityUpdatedBy,omitempty"`
+	PlanNoteUpdatedAt             *time.Time `json:"planNoteUpdatedAt,omitempty"`
+	PlanNoteUpdatedBy             *string    `json:"planNoteUpdatedBy,omitempty"`
+	ContactPersonUpdatedAt        *time.Time `json:"contactPersonUpdatedAt,omitempty"`
+	ContactPersonUpdatedBy        *string    `json:"contactPersonUpdatedBy,omitempty"`
 }
 
 type AssessmentCriteria struct {

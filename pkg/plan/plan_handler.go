@@ -17,7 +17,7 @@ type PlanStore interface {
 	GetPlanDetails(planName, userRole string, username string) (PlanDetails, error)
 	CanEditPlan(planName, username string) (bool, error)
 	EditPlan(planName string, payload EditPlanRequest, userRole string, username string, userId int) (string, error)
-	GetAllPlanDetails() ([]AdminDashboardPlanDetails, error)
+	GetAllPlanDetails() ([]AdminDashboardPlanDetailsRow, error)
 }
 
 type PlanHandler struct {

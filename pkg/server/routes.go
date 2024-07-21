@@ -34,16 +34,16 @@ func (app *Server) Routes(db *sql.DB) http.Handler {
 		r.Post("/hash-password", userHandler.GenerateHashedPassword)
 
 		r.Post("/auth/login", userHandler.Login)
-		r.Get("/auth/current", appMiddleware.IsLoggedIn(userHandler.GetCurrentUser))
 		r.Post("/auth/logout", userHandler.Logout)
 		r.Post("/auth/refresh-token", userHandler.RefreshAccessToken)
+		r.Get("/auth/current", appMiddleware.IsLoggedIn(userHandler.GetCurrentUser))
 
 		r.Get("/plan/preview/all", appMiddleware.IsLoggedIn(planHandler.GetAllPreviewPlan))
 		r.Get("/plan/access/{planName}", appMiddleware.IsLoggedIn(planHandler.CanAccessPlanDetails))
 		r.Get("/plan/details/{planName}", appMiddleware.IsLoggedIn(planHandler.GetPlanDetails))
 		r.Get("/plan/edit/{planName}", appMiddleware.IsLoggedIn(planHandler.CanEditPlan))
 
-		r.Get("/admin/plan/details/all", appMiddleware.IsAdmin(planHandler.GetAllPlanDetails))
+		r.Get("/admin/plans", appMiddleware.IsAdmin(planHandler.GetAllPlanDetails))
 
 		r.Patch("/plan", appMiddleware.IsUser(planHandler.UserEditPlan))
 

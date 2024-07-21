@@ -78,28 +78,51 @@ func (s *store) CanEditPlan(planName, username string) (bool, error) {
 	return true, nil
 }
 
-func (s *store) GetAllPlanDetails() ([]AdminDashboardPlanDetails, error) {
-	rows, err := s.db.Query(getPlanScoreDetailsSQL)
+func (s *store) GetAllPlanDetails() ([]AdminDashboardPlanDetailsRow, error) {
+	rows, err := s.db.Query(getAllPlanDetailsForAdminDashboardSQL)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var rowsData []AdminDashboardPlanDetails
-	// for rows.Next() {
-	// 	var row AdminDashboardPlanDetails
-	// 	err = rows.Scan(&row.PlanId, &row.CriteriaId, &row.CriteriaOrder, &row.UserRole, &row.Year, &row.Score, &row.CreatedAt, &row.CriteriaCategory, &row.CriteriaDisplay)
-	// 	if err != nil {
-	// 		slog.Error(err.Error(), "field", "scan AssessmentScoreRow")
-	// 		return nil, err
-	// 	}
-	// 	rowsData = append(rowsData, row)
-	// }
-	// err = rows.Err()
-	// if err != nil {
-	// 	return nil, err
-	// }
-	return rowsData, nil
+	var rawData []AdminDashboardPlanDetailsRow
+	for rows.Next() {
+		var row AdminDashboardPlanDetailsRow
+		err = rows.Scan(
+			&row.PlanId,
+			&row.Name,
+			&row.Topic,
+			&row.TopicEn,
+			&row.TopicShort,
+			&row.ProposedActivity,
+			&row.PlanNote,
+			&row.AdminNote,
+			&row.UpdatedAt,
+			&row.UpdatedBy,
+			&row.ReadinessWillingnessUpdatedAt,
+			&row.ReadinessWillingnessUpdatedBy,
+			&row.IrGoalTypeUpdatedAt,
+			&row.IrGoalTypeUpdatedBy,
+			&row.IrGoalDetailsUpdatedAt,
+			&row.IrGoalDetailsUpdatedBy,
+			&row.ProposedActivityUpdatedAt,
+			&row.ProposedActivityUpdatedBy,
+			&row.PlanNoteUpdatedAt,
+			&row.PlanNoteUpdatedBy,
+			&row.ContactPersonUpdatedAt,
+			&row.ContactPersonUpdatedBy,
+		)
+		if err != nil {
+			slog.Error(err.Error(), "field", "scan AdminDashboardPlanDetailsRow")
+			return nil, err
+		}
+		rawData = append(rawData, row)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+	return rawData, nil
 }
 
 func (s *store) GetPlanDetails(planName, userRole string, username string) (PlanDetails, error) {
