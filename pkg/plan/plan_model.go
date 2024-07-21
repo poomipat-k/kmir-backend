@@ -43,6 +43,23 @@ type PlanDetails struct {
 	UpdatedBy                     *string              `json:"updatedBy,omitempty"`
 }
 
+type AdminDashboardPlanDetails struct {
+	PlanId                    int               `json:"planId,omitempty"`
+	Name                      string            `json:"name,omitempty"`
+	Topic                     string            `json:"topic,omitempty"`
+	TopicEn                   string            `json:"topicEn,omitempty"`
+	TopicShort                string            `json:"topicShort,omitempty"`
+	AssessmentScore           []AssessmentScore `json:"assessmentScore,omitempty"`
+	ProposedActivity          *string           `json:"proposedActivity,omitempty"`
+	ProposedActivityUpdatedAt *time.Time        `json:"proposedActivityUpdatedAt,omitempty"`
+	ProposedActivityUpdatedBy *string           `json:"proposedActivityUpdatedBy,omitempty"`
+	PlanNote                  *string           `json:"planNote,omitempty"`
+	PlanNoteUpdatedAt         *time.Time        `json:"planNoteUpdatedAt,omitempty"`
+	PlanNoteUpdatedBy         *string           `json:"planNoteUpdatedBy,omitempty"`
+	UpdatedAt                 *time.Time        `json:"updatedAt,omitempty"`
+	UpdatedBy                 *string           `json:"updatedBy,omitempty"`
+}
+
 type AssessmentCriteria struct {
 	CriteriaId  int    `json:"criteriaId,omitempty"`
 	OrderNumber int    `json:"orderNumber,omitempty"`

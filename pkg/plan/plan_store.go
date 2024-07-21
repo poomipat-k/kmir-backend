@@ -78,6 +78,30 @@ func (s *store) CanEditPlan(planName, username string) (bool, error) {
 	return true, nil
 }
 
+func (s *store) GetAllPlanDetails() ([]AdminDashboardPlanDetails, error) {
+	rows, err := s.db.Query(getPlanScoreDetailsSQL)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var rowsData []AdminDashboardPlanDetails
+	// for rows.Next() {
+	// 	var row AdminDashboardPlanDetails
+	// 	err = rows.Scan(&row.PlanId, &row.CriteriaId, &row.CriteriaOrder, &row.UserRole, &row.Year, &row.Score, &row.CreatedAt, &row.CriteriaCategory, &row.CriteriaDisplay)
+	// 	if err != nil {
+	// 		slog.Error(err.Error(), "field", "scan AssessmentScoreRow")
+	// 		return nil, err
+	// 	}
+	// 	rowsData = append(rowsData, row)
+	// }
+	// err = rows.Err()
+	// if err != nil {
+	// 	return nil, err
+	// }
+	return rowsData, nil
+}
+
 func (s *store) GetPlanDetails(planName, userRole string, username string) (PlanDetails, error) {
 	var pd PlanDetails
 	var planRow *sql.Row
