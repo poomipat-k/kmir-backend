@@ -19,6 +19,7 @@ type PlanStore interface {
 	EditPlan(planName string, payload EditPlanRequest, userRole string, username string, userId int) (string, error)
 	GetAllPlanDetails() ([]AdminDashboardPlanDetailsRow, error)
 	AdminGetScores(fromYear, toYear int, plan string) ([]AssessmentScore, error)
+	GetAssessmentCriteria() ([]AssessmentCriteria, error)
 }
 
 type PlanHandler struct {
@@ -80,13 +81,23 @@ func (h *PlanHandler) GetPlanDetails(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PlanHandler) GetAllPlanDetails(w http.ResponseWriter, r *http.Request) {
-	data, err := h.store.GetAllPlanDetails()
+	planDetails, err := h.store.GetAllPlanDetails()
 	if err != nil {
 		slog.Error(err.Error())
 		utils.ErrorJSON(w, err, "", http.StatusInternalServerError)
 		return
 	}
-	utils.WriteJSON(w, http.StatusOK, data)
+	criteriaList, err := h.store.GetAssessmentCriteria()
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "", http.StatusInternalServerError)
+		return
+	}
+	response := AdminAllPlansDetailsResponse{
+		AssessmentCriteria: criteriaList,
+		PlanDetails:        planDetails,
+	}
+	utils.WriteJSON(w, http.StatusOK, response)
 }
 
 func (h *PlanHandler) AdminGetScores(w http.ResponseWriter, r *http.Request) {

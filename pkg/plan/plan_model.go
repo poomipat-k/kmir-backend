@@ -43,6 +43,11 @@ type PlanDetails struct {
 	UpdatedBy                     *string              `json:"updatedBy,omitempty"`
 }
 
+type AdminAllPlansDetailsResponse struct {
+	AssessmentCriteria []AssessmentCriteria           `json:"assessmentCriteria,omitempty"`
+	PlanDetails        []AdminDashboardPlanDetailsRow `json:"planDetails,omitempty"`
+}
+
 type AdminDashboardPlanDetailsRow struct {
 	PlanId           int               `json:"planId,omitempty"`
 	Name             string            `json:"name,omitempty"`

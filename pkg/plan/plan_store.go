@@ -403,6 +403,30 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 	return "", nil
 }
 
+func (s *store) GetAssessmentCriteria() ([]AssessmentCriteria, error) {
+	assessmentRows, err := s.db.Query(getAllAssessmentCriteriaSQL)
+	if err != nil {
+		return nil, err
+	}
+	defer assessmentRows.Close()
+
+	var data []AssessmentCriteria
+	for assessmentRows.Next() {
+		var assessmentCri AssessmentCriteria
+		err = assessmentRows.Scan(&assessmentCri.Category, &assessmentCri.CriteriaId, &assessmentCri.Display, &assessmentCri.OrderNumber)
+		if err != nil {
+			slog.Error(err.Error(), "field", "GetAssessmentCriteria(): scan assessmentCriteriaRows")
+			return nil, err
+		}
+		data = append(data, assessmentCri)
+	}
+	err = assessmentRows.Err()
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
 func (s *store) AdminGetScores(fromYear, toYear int, plan string) ([]AssessmentScore, error) {
 	sqlStmt := prepareAdminGetScoresSQL(plan)
 	sqlValues, err := prepareAdminGetScoresSQLValues(fromYear, toYear, plan)
