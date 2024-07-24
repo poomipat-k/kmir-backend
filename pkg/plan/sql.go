@@ -167,5 +167,7 @@ INNER JOIN users ON users.id = assessment_score.user_id
 WHERE row_num <= $1 
 AND user_role = 'admin'
 AND created_at >= $2
-AND created_at < $3;
+AND created_at < $3
+ORDER BY plan_id ASC, criteria_order ASC
+;
 `
