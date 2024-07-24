@@ -79,6 +79,31 @@ func (s *store) CanEditPlan(planName, username string) (bool, error) {
 }
 
 func (s *store) GetAllPlanDetails(criteriaLen int) ([]AdminDashboardPlanDetailsRow, error) {
+	planData, err := s.getAllPlansDetailsForAdmin()
+	if err != nil {
+		return nil, err
+	}
+
+	// get score details
+	scoreRowsData, err := s.getAllPlanScoresForAdmin(criteriaLen)
+	if err != nil {
+		return nil, err
+	}
+
+	// put score to each plan details
+	for _, scoreRow := range scoreRowsData {
+		for index, plan := range planData {
+			if plan.PlanId == scoreRow.PlanId {
+				planData[index].AssessmentScore = append(planData[index].AssessmentScore, scoreRow)
+				break
+			}
+		}
+	}
+
+	return planData, nil
+}
+
+func (s *store) getAllPlansDetailsForAdmin() ([]AdminDashboardPlanDetailsRow, error) {
 	rows, err := s.db.Query(getAllPlanDetailsForAdminDashboardSQL)
 	if err != nil {
 		return nil, err
@@ -122,8 +147,10 @@ func (s *store) GetAllPlanDetails(criteriaLen int) ([]AdminDashboardPlanDetailsR
 	if err != nil {
 		return nil, err
 	}
+	return planData, nil
+}
 
-	// get score details
+func (s *store) getAllPlanScoresForAdmin(criteriaLen int) ([]AssessmentScoreRow, error) {
 	loc, err := utils.GetTimeLocation()
 	if err != nil {
 		return nil, err
@@ -152,18 +179,7 @@ func (s *store) GetAllPlanDetails(criteriaLen int) ([]AdminDashboardPlanDetailsR
 	if err != nil {
 		return nil, err
 	}
-
-	// put score to each plan details
-	for _, scoreRow := range scoreRowsData {
-		for index, plan := range planData {
-			if plan.PlanId == scoreRow.PlanId {
-				planData[index].AssessmentScore = append(planData[index].AssessmentScore, scoreRow)
-				break
-			}
-		}
-	}
-
-	return planData, nil
+	return scoreRowsData, nil
 }
 
 func (s *store) GetPlanDetails(planName, userRole string, username string) (PlanDetails, error) {
