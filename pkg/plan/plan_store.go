@@ -78,14 +78,14 @@ func (s *store) CanEditPlan(planName, username string) (bool, error) {
 	return true, nil
 }
 
-func (s *store) GetAllPlanDetails() ([]AdminDashboardPlanDetailsRow, error) {
+func (s *store) GetAllPlanDetails(criteriaLen int) ([]AdminDashboardPlanDetailsRow, error) {
 	rows, err := s.db.Query(getAllPlanDetailsForAdminDashboardSQL)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var rawData []AdminDashboardPlanDetailsRow
+	var planData []AdminDashboardPlanDetailsRow
 	for rows.Next() {
 		var row AdminDashboardPlanDetailsRow
 		err = rows.Scan(
@@ -116,13 +116,54 @@ func (s *store) GetAllPlanDetails() ([]AdminDashboardPlanDetailsRow, error) {
 			slog.Error(err.Error(), "field", "scan AdminDashboardPlanDetailsRow")
 			return nil, err
 		}
-		rawData = append(rawData, row)
+		planData = append(planData, row)
 	}
 	err = rows.Err()
 	if err != nil {
 		return nil, err
 	}
-	return rawData, nil
+
+	// get score details
+	loc, err := utils.GetTimeLocation()
+	if err != nil {
+		return nil, err
+	}
+	now := time.Now().In(loc)
+	fromDate := time.Date(now.Year(), time.Month(1), 1, 0, 0, 0, 0, loc)
+	toDate := time.Date(now.Year()+1, time.Month(1), 1, 0, 0, 0, 0, loc)
+
+	scoreRows, err := s.db.Query(adminGetAllPlanScoreDetailsSQL, criteriaLen, fromDate, toDate)
+	if err != nil {
+		return nil, err
+	}
+	defer scoreRows.Close()
+
+	var scoreRowsData []AssessmentScoreRow
+	for scoreRows.Next() {
+		var row AssessmentScoreRow
+		err = scoreRows.Scan(&row.PlanId, &row.CriteriaId, &row.CriteriaOrder, &row.Score, &row.CreatedAt)
+		if err != nil {
+			slog.Error(err.Error(), "field", "scoreRowsData scan: AssessmentScoreRow")
+			return nil, err
+		}
+		scoreRowsData = append(scoreRowsData, row)
+	}
+	err = scoreRows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	// put score to each plan details
+	for _, scoreRow := range scoreRowsData {
+		for index, plan := range planData {
+			if plan.PlanId == scoreRow.PlanId {
+				planData[index].AssessmentScore = append(planData[index].AssessmentScore, scoreRow)
+				break
+			}
+		}
+	}
+
+	return planData, nil
 }
 
 func (s *store) GetPlanDetails(planName, userRole string, username string) (PlanDetails, error) {

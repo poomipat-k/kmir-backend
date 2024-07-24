@@ -49,15 +49,15 @@ type AdminAllPlansDetailsResponse struct {
 }
 
 type AdminDashboardPlanDetailsRow struct {
-	PlanId           int               `json:"planId,omitempty"`
-	Name             string            `json:"name,omitempty"`
-	Topic            string            `json:"topic,omitempty"`
-	TopicEn          string            `json:"topicEn,omitempty"`
-	TopicShort       string            `json:"topicShort,omitempty"`
-	AssessmentScore  []AssessmentScore `json:"assessmentScore,omitempty"`
-	ProposedActivity *string           `json:"proposedActivity,omitempty"`
-	PlanNote         *string           `json:"planNote,omitempty"`
-	AdminNote        *string           `json:"adminNote,omitempty"`
+	PlanId           int                  `json:"planId,omitempty"`
+	Name             string               `json:"name,omitempty"`
+	Topic            string               `json:"topic,omitempty"`
+	TopicEn          string               `json:"topicEn,omitempty"`
+	TopicShort       string               `json:"topicShort,omitempty"`
+	AssessmentScore  []AssessmentScoreRow `json:"assessmentScore"`
+	ProposedActivity *string              `json:"proposedActivity,omitempty"`
+	PlanNote         *string              `json:"planNote,omitempty"`
+	AdminNote        *string              `json:"adminNote,omitempty"`
 	// Field to detect change logs
 	UpdatedAt                     *time.Time `json:"updatedAt,omitempty"`
 	UpdatedBy                     *string    `json:"updatedBy,omitempty"`

@@ -139,3 +139,33 @@ WHERE plan.name = $1
 )
 WHERE row_num <= 7;
 `
+
+const adminGetAllPlanScoreDetailsSQL = `
+SELECT
+plan_id,
+criteria_id,
+criteria_order, 
+score,
+created_at
+FROM
+(
+SELECT
+assessment_score.plan_id as plan_id,
+assessment_score.assessment_criteria_id as criteria_id,
+assessment_criteria.order_number as criteria_order,
+users.user_role as user_role,
+score, 
+assessment_score.created_at as created_at,
+ROW_NUMBER() OVER (
+PARTITION BY assessment_score.plan_id, assessment_score.user_id, year 
+ORDER BY assessment_score.created_at DESC, assessment_criteria_id ASC) 
+as row_num FROM assessment_score 
+INNER JOIN plan ON plan.id = assessment_score.plan_id
+INNER JOIN assessment_criteria ON assessment_criteria.id = assessment_score.assessment_criteria_id
+INNER JOIN users ON users.id = assessment_score.user_id
+)
+WHERE row_num <= $1 
+AND user_role = 'admin'
+AND created_at >= $2
+AND created_at < $3;
+`

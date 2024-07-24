@@ -17,7 +17,7 @@ type PlanStore interface {
 	GetPlanDetails(planName, userRole string, username string) (PlanDetails, error)
 	CanEditPlan(planName, username string) (bool, error)
 	EditPlan(planName string, payload EditPlanRequest, userRole string, username string, userId int) (string, error)
-	GetAllPlanDetails() ([]AdminDashboardPlanDetailsRow, error)
+	GetAllPlanDetails(criteriaLen int) ([]AdminDashboardPlanDetailsRow, error)
 	AdminGetScores(fromYear, toYear int, plan string) ([]AssessmentScore, error)
 	GetAssessmentCriteria() ([]AssessmentCriteria, error)
 }
@@ -81,13 +81,13 @@ func (h *PlanHandler) GetPlanDetails(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PlanHandler) GetAllPlanDetails(w http.ResponseWriter, r *http.Request) {
-	planDetails, err := h.store.GetAllPlanDetails()
+	criteriaList, err := h.store.GetAssessmentCriteria()
 	if err != nil {
 		slog.Error(err.Error())
 		utils.ErrorJSON(w, err, "", http.StatusInternalServerError)
 		return
 	}
-	criteriaList, err := h.store.GetAssessmentCriteria()
+	planDetails, err := h.store.GetAllPlanDetails(len(criteriaList))
 	if err != nil {
 		slog.Error(err.Error())
 		utils.ErrorJSON(w, err, "", http.StatusInternalServerError)
