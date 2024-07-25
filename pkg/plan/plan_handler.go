@@ -21,6 +21,7 @@ type PlanStore interface {
 	AdminGetScores(fromYear, toYear int, plan string) ([]AssessmentScore, error)
 	GetAssessmentCriteria() ([]AssessmentCriteria, error)
 	GetAdminNote() (string, error)
+	GetOnlyLatestScore() ([]LatestScoreTimestamp, error)
 }
 
 type PlanHandler struct {
@@ -97,13 +98,22 @@ func (h *PlanHandler) GetAllPlanDetails(w http.ResponseWriter, r *http.Request) 
 	adminNote, err := h.store.GetAdminNote()
 	if err != nil {
 		slog.Error(err.Error())
-		utils.ErrorJSON(w, err, "", http.StatusInternalServerError)
+		utils.ErrorJSON(w, err, "admin note", http.StatusInternalServerError)
 		return
 	}
+
+	latestScores, err := h.store.GetOnlyLatestScore()
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "latest scores", http.StatusInternalServerError)
+		return
+	}
+
 	response := AdminAllPlansDetailsResponse{
 		AssessmentCriteria: criteriaList,
 		PlanDetails:        planDetails,
 		AdminNote:          adminNote,
+		LatestScores:       latestScores,
 	}
 	utils.WriteJSON(w, http.StatusOK, response)
 }

@@ -174,3 +174,19 @@ ORDER BY plan_id ASC, criteria_order ASC
 `
 
 const getAdminNote = "SELECT note from admin_note LIMIT 1;"
+
+const getOnlyLatestScoreSQL = `
+SELECT plan_id, user_role, created_at 
+FROM 
+(
+SELECT assessment_score.plan_id, users.user_role,  assessment_score.created_at,
+ROW_NUMBER() OVER (
+PARTITION BY assessment_score.plan_id
+ORDER BY assessment_score.created_at DESC) 
+as row_num
+FROM assessment_score
+INNER JOIN users ON assessment_score.user_id = users.id
+ORDER BY assessment_score.created_at
+)
+WHERE row_num <= 1;
+;`

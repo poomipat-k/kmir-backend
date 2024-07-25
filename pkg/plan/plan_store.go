@@ -546,6 +546,30 @@ func (s *store) GetAdminNote() (string, error) {
 	return adminNote, nil
 }
 
+func (s *store) GetOnlyLatestScore() ([]LatestScoreTimestamp, error) {
+	rows, err := s.db.Query(getOnlyLatestScoreSQL)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var data []LatestScoreTimestamp
+	for rows.Next() {
+		var row LatestScoreTimestamp
+		err = rows.Scan(&row.PlanId, &row.UserRole, &row.CreatedAt)
+		if err != nil {
+			slog.Error(err.Error(), "field", "GetOnlyLatestScore(): scan LatestScoreTimestamp")
+			return nil, err
+		}
+		data = append(data, row)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
 func prepareAdminGetScoresSQL(plan string) string {
 	var sqlStmt string
 	if plan != "all" {

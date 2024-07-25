@@ -47,6 +47,13 @@ type AdminAllPlansDetailsResponse struct {
 	AssessmentCriteria []AssessmentCriteria           `json:"assessmentCriteria,omitempty"`
 	PlanDetails        []AdminDashboardPlanDetailsRow `json:"planDetails,omitempty"`
 	AdminNote          string                         `json:"adminNote,omitempty"`
+	LatestScores       []LatestScoreTimestamp         `json:"latestScores,omitempty"`
+}
+
+type LatestScoreTimestamp struct {
+	PlanId    int        `json:"planId,omitempty"`
+	UserRole  string     `json:"userRole,omitempty"`
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
 }
 
 type AdminDashboardPlanDetailsRow struct {
