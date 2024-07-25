@@ -28,7 +28,6 @@ CREATE TABLE plan (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
   updated_by VARCHAR(16),
-  admin_note TEXT,
   for_admin BOOLEAN DEFAULT false
 );
 

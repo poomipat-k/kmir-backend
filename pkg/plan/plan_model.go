@@ -46,6 +46,7 @@ type PlanDetails struct {
 type AdminAllPlansDetailsResponse struct {
 	AssessmentCriteria []AssessmentCriteria           `json:"assessmentCriteria,omitempty"`
 	PlanDetails        []AdminDashboardPlanDetailsRow `json:"planDetails,omitempty"`
+	AdminNote          string                         `json:"adminNote,omitempty"`
 }
 
 type AdminDashboardPlanDetailsRow struct {
@@ -57,7 +58,6 @@ type AdminDashboardPlanDetailsRow struct {
 	AssessmentScore  []AssessmentScoreRow `json:"assessmentScore"`
 	ProposedActivity *string              `json:"proposedActivity,omitempty"`
 	PlanNote         *string              `json:"planNote,omitempty"`
-	AdminNote        *string              `json:"adminNote,omitempty"`
 	// Field to detect change logs
 	UpdatedAt                     *time.Time `json:"updatedAt,omitempty"`
 	UpdatedBy                     *string    `json:"updatedBy,omitempty"`

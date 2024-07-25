@@ -121,7 +121,6 @@ func (s *store) getAllPlansDetailsForAdmin() ([]AdminDashboardPlanDetailsRow, er
 			&row.TopicShort,
 			&row.ProposedActivity,
 			&row.PlanNote,
-			&row.AdminNote,
 			&row.UpdatedAt,
 			&row.UpdatedBy,
 			&row.ReadinessWillingnessUpdatedAt,
@@ -529,6 +528,22 @@ func (s *store) AdminGetScores(fromYear, toYear int, plan string) ([]AssessmentS
 		})
 	}
 	return scores, nil
+}
+
+func (s *store) GetAdminNote() (string, error) {
+	var adminNote string
+	row := s.db.QueryRow(getAdminNote)
+	err := row.Scan(&adminNote)
+
+	if err == sql.ErrNoRows {
+		slog.Error("GetAdminNote(): no row were returned!")
+		return "", err
+	}
+	if err != nil {
+		slog.Error(err.Error())
+		return "", fmt.Errorf("GetAdminNote() unknown error")
+	}
+	return adminNote, nil
 }
 
 func prepareAdminGetScoresSQL(plan string) string {

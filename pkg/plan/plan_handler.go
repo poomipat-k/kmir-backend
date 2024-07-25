@@ -20,6 +20,7 @@ type PlanStore interface {
 	GetAllPlanDetails(criteriaLen int) ([]AdminDashboardPlanDetailsRow, error)
 	AdminGetScores(fromYear, toYear int, plan string) ([]AssessmentScore, error)
 	GetAssessmentCriteria() ([]AssessmentCriteria, error)
+	GetAdminNote() (string, error)
 }
 
 type PlanHandler struct {
@@ -93,9 +94,16 @@ func (h *PlanHandler) GetAllPlanDetails(w http.ResponseWriter, r *http.Request) 
 		utils.ErrorJSON(w, err, "", http.StatusInternalServerError)
 		return
 	}
+	adminNote, err := h.store.GetAdminNote()
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "", http.StatusInternalServerError)
+		return
+	}
 	response := AdminAllPlansDetailsResponse{
 		AssessmentCriteria: criteriaList,
 		PlanDetails:        planDetails,
+		AdminNote:          adminNote,
 	}
 	utils.WriteJSON(w, http.StatusOK, response)
 }

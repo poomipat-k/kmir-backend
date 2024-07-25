@@ -85,7 +85,6 @@ plan.topic_en as topic_en,
 plan.topic_short as topic_short,
 plan.proposed_activity,
 plan.plan_note,
-plan.admin_note,
 plan.updated_at,
 plan.updated_by,
 plan.readiness_willingness_updated_at,
@@ -101,7 +100,9 @@ plan.plan_note_updated_by,
 plan.contact_person_updated_at,
 plan.contact_person_updated_by
 FROM plan
-WHERE plan.for_admin = false;
+WHERE plan.for_admin = false
+ORDER BY plan.id
+;
 `
 
 const getPlanScoreDetailsSQL = `
@@ -171,3 +172,5 @@ AND created_at < $3
 ORDER BY plan_id ASC, criteria_order ASC
 ;
 `
+
+const getAdminNote = "SELECT note from admin_note LIMIT 1;"
