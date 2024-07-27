@@ -426,7 +426,7 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 			updateSQLBuilder.WriteString(sqlParams[i])
 			updateSQLBuilder.WriteString(fmt.Sprintf(" = $%d, ", i+1))
 		}
-		updateSQLBuilder.WriteString(fmt.Sprintf("updated_at = $%d", n+1))
+		updateSQLBuilder.WriteString(fmt.Sprintf("updated_at = $%d, updated_by = 'user'", n+1))
 		updateSQLBuilder.WriteString(fmt.Sprintf(" WHERE plan.name = $%d;", n+2))
 		updateSQL := updateSQLBuilder.String()
 
