@@ -47,3 +47,27 @@ type ContactPersonRequiredError struct{}
 func (e ContactPersonRequiredError) Error() string {
 	return "contactPerson is required"
 }
+
+type SomePlanScoreIsMissing struct{}
+
+func (e SomePlanScoreIsMissing) Error() string {
+	return "some plan score is missing"
+}
+
+type SomeProposedActivityIsMissing struct{}
+
+func (e SomeProposedActivityIsMissing) Error() string {
+	return "some proposed activity is missing"
+}
+
+type SomePlanNoteIsMissing struct{}
+
+func (e SomePlanNoteIsMissing) Error() string {
+	return "some plan note is missing"
+}
+
+type AdminNoteRequiredError struct{}
+
+func (e AdminNoteRequiredError) Error() string {
+	return "adminNote is required"
+}

@@ -270,6 +270,12 @@ func (h *PlanHandler) AdminEdit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Println(payload)
+	errName, err := validateAdminEditPayload(payload)
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, errName, http.StatusBadRequest)
+		return
+	}
 	utils.WriteJSON(w, http.StatusOK, common.CommonSuccessResponse{
 		Success: true,
 		Message: "admin update success",

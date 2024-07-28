@@ -123,10 +123,10 @@ type EditPlanRequest struct {
 }
 
 type AdminEditRequest struct {
-	AssessmentScore  []map[string]int `json:"assessmentScore,omitempty"`
-	ProposedActivity []string         `json:"proposedActivity,omitempty"`
-	PlanNote         []string         `json:"planNote,omitempty"`
-	AdminNote        *string          `json:"adminNote,omitempty"`
+	AssessmentScore  *[]map[string]int `json:"assessmentScore,omitempty"`
+	ProposedActivity *[]string         `json:"proposedActivity,omitempty"`
+	PlanNote         *[]string         `json:"planNote,omitempty"`
+	AdminNote        *string           `json:"adminNote,omitempty"`
 }
 
 type AdminGetScoresRequest struct {
