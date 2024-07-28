@@ -122,6 +122,13 @@ type EditPlanRequest struct {
 	ContactPerson        *string        `json:"contactPerson,omitempty"`
 }
 
+type AdminEditRequest struct {
+	AssessmentScore  []map[string]int `json:"assessmentScore,omitempty"`
+	ProposedActivity []string         `json:"proposedActivity,omitempty"`
+	PlanNote         []string         `json:"planNote,omitempty"`
+	AdminNote        *string          `json:"adminNote,omitempty"`
+}
+
 type AdminGetScoresRequest struct {
 	FromYear int    `json:"fromYear,omitempty"`
 	ToYear   int    `json:"toYear,omitempty"`

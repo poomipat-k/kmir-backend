@@ -2,6 +2,7 @@ package plan
 
 import (
 	"errors"
+	"log"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -258,5 +259,19 @@ func (h *PlanHandler) UserEditPlan(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, http.StatusOK, common.CommonSuccessResponse{
 		Success: true,
 		Message: "update plan success",
+	})
+}
+
+func (h *PlanHandler) AdminEdit(w http.ResponseWriter, r *http.Request) {
+	var payload AdminEditRequest
+	err := utils.ReadJSON(w, r, &payload)
+	if err != nil {
+		utils.ErrorJSON(w, err, "payload", http.StatusBadRequest)
+		return
+	}
+	log.Println(payload)
+	utils.WriteJSON(w, http.StatusOK, common.CommonSuccessResponse{
+		Success: true,
+		Message: "admin update success",
 	})
 }
