@@ -11,3 +11,12 @@ func GetTimeLocation() (*time.Location, error) {
 	}
 	return loc, nil
 }
+
+func GetNow() (time.Time, error) {
+	loc, err := GetTimeLocation()
+	if err != nil {
+		return time.Time{}, err
+	}
+	now := time.Now().In(loc)
+	return now, nil
+}

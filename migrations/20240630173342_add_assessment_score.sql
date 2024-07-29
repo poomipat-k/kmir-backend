@@ -9,6 +9,9 @@ CREATE TABLE assessment_score (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
 );
 
+CREATE INDEX IF NOT EXISTS assessment_score_created_at
+ON assessment_score(created_at);
+
 INSERT INTO assessment_score
 (plan_id, user_id, assessment_criteria_id, score, year, created_at)
 VALUES 

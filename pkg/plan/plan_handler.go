@@ -2,7 +2,7 @@ package plan
 
 import (
 	"errors"
-	"log"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -23,6 +23,7 @@ type PlanStore interface {
 	GetAssessmentCriteria() ([]AssessmentCriteria, error)
 	GetAdminNote() (string, error)
 	GetOnlyLatestScore() ([]LatestScoreTimestamp, error)
+	AdminEdit(payload AdminEditRequest, userId int) (string, error)
 }
 
 type PlanHandler struct {
@@ -263,19 +264,33 @@ func (h *PlanHandler) UserEditPlan(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PlanHandler) AdminEdit(w http.ResponseWriter, r *http.Request) {
+	userId, err := utils.GetUserIdFromRequestHeader(r)
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "userId", http.StatusUnauthorized)
+		return
+	}
+
 	var payload AdminEditRequest
-	err := utils.ReadJSON(w, r, &payload)
+	err = utils.ReadJSON(w, r, &payload)
 	if err != nil {
 		utils.ErrorJSON(w, err, "payload", http.StatusBadRequest)
 		return
 	}
-	log.Println(payload)
 	errName, err := validateAdminEditPayload(payload)
 	if err != nil {
 		slog.Error(err.Error())
 		utils.ErrorJSON(w, err, errName, http.StatusBadRequest)
 		return
 	}
+
+	errName, err = h.store.AdminEdit(payload, userId)
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, fmt.Sprintf("store: %s", errName), http.StatusBadRequest)
+		return
+	}
+
 	utils.WriteJSON(w, http.StatusOK, common.CommonSuccessResponse{
 		Success: true,
 		Message: "admin update success",
