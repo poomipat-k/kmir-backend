@@ -677,80 +677,92 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 	return "", nil
 }
 
-func (s *store) AdminEdit(payload AdminEditRequest, userId int) (string, error) {
+func (s *store) AdminEdit(payload AdminEditRequest, userId int) (bool, string, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
-		return "transaction", err
+		return false, "transaction", err
 	}
 	defer tx.Rollback()
 
 	criteriaList, err := s.GetAssessmentCriteria()
 	if err != nil {
 		slog.Error(err.Error())
-		return "criteriaList", err
+		return false, "criteriaList", err
 	}
 	criteriaLen := len(criteriaList)
 	planDetails, err := s.GetAllPlanDetails(criteriaLen)
 	if err != nil {
 		slog.Error(err.Error())
-		return "Admin update: GetAllPlanDetails", err
+		return false, "Admin update: GetAllPlanDetails", err
 	}
 
 	now, err := utils.GetNow()
 	if err != nil {
-		return "now", err
+		return false, "now", err
 	}
+
+	hasUpdated := false
 
 	if payload.AssessmentScore != nil {
-		errName, err := handleAdminUpdateAssessmentScore(ctx, tx, planDetails, userId, criteriaLen, now, *payload.AssessmentScore)
+		scoreChanged, errName, err := handleAdminUpdateAssessmentScore(ctx, tx, planDetails, userId, criteriaLen, now, *payload.AssessmentScore)
 		if err != nil {
-			return errName, err
+			return false, errName, err
 		}
+		hasUpdated = hasUpdated || scoreChanged
 	}
 
-	errName, err := handleAdminUpdatePlan(ctx, tx, planDetails, now, payload)
+	planUpdated, errName, err := handleAdminUpdatePlan(ctx, tx, planDetails, now, payload)
 	if err != nil {
-		return errName, err
+		return false, errName, err
 	}
+	hasUpdated = hasUpdated || planUpdated
 
 	if payload.AdminNote != nil {
-		errName, err := handleAdminUpdateAdminNote(ctx, tx, *payload.AdminNote)
+		adminNoteUpdated, errName, err := s.handleAdminUpdateAdminNote(ctx, tx, *payload.AdminNote)
 		if err != nil {
-			return errName, err
+			return false, errName, err
 		}
+		hasUpdated = hasUpdated || adminNoteUpdated
 	}
 
 	err = tx.Commit()
 	if err != nil {
 		slog.Error("commit error", "err", err.Error())
-		return "commit", err
+		return false, "commit", err
 	}
-	return "", nil
+	return hasUpdated, "", nil
 }
 
-func handleAdminUpdateAdminNote(
+func (s *store) handleAdminUpdateAdminNote(
 	ctx context.Context,
 	tx *sql.Tx,
 	newNote string,
-) (string, error) {
-	const sql = "UPDATE admin_note SET note = $1 WHERE id = 1;"
-	result, err := tx.ExecContext(ctx, sql, newNote)
+) (bool, string, error) {
+	curAdminNote, err := s.GetAdminNote()
 	if err != nil {
-		slog.Error("admin update admin_note sql", "error", err)
-		return "update_admin_note", err
+		return false, "adminUpdate: GetAdminNote", err
 	}
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		slog.Error("rowsAffected update admin_note sql", "error", err)
-		return "rows_affected_admin_note", err
+	if curAdminNote != newNote {
+		const sql = "UPDATE admin_note SET note = $1 WHERE id = 1;"
+		result, err := tx.ExecContext(ctx, sql, newNote)
+		if err != nil {
+			slog.Error("admin update admin_note sql", "error", err)
+			return false, "update_admin_note", err
+		}
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			slog.Error("rowsAffected update admin_note sql", "error", err)
+			return false, "rows_affected_admin_note", err
+		}
+		if rowsAffected == 0 {
+			return false, "zero_row_affected_admin_note", errors.New("update admin_note failed")
+		}
+		return true, "", nil
 	}
-	if rowsAffected == 0 {
-		return "zero_row_affected_admin_note", errors.New("update admin_note failed")
-	}
-	return "", nil
+	return false, "", nil
 }
 
 func handleAdminUpdatePlan(
@@ -759,8 +771,9 @@ func handleAdminUpdatePlan(
 	curPlanDetails []AdminDashboardPlanDetailsRow,
 	now time.Time,
 	payload AdminEditRequest,
-) (string, error) {
+) (bool, string, error) {
 	changes := getPlanChangesData(payload, curPlanDetails)
+	updated := false
 	for i, changePair := range changes {
 		if changePair[0] || changePair[1] {
 			values := []any{}
@@ -786,24 +799,25 @@ func handleAdminUpdatePlan(
 			stmt, err := tx.Prepare(updatePlanBuilder.String())
 			if err != nil {
 				slog.Error("error prepare admin update plan sql", "error", err)
-				return "prepare_sql_update_plan", err
+				return false, "prepare_sql_update_plan", err
 			}
 			result, err := stmt.ExecContext(ctx, values...)
 			if err != nil {
 				slog.Error("execContext on admin update plan sql", "error", err)
-				return "exec_admin_update_plan_sql", err
+				return false, "exec_admin_update_plan_sql", err
 			}
 			rowsAffected, err := result.RowsAffected()
 			if err != nil {
 				slog.Error("rowsAffected on admin update plan sql", "error", err)
-				return "rows_affected_admin_update_plan", err
+				return false, "rows_affected_admin_update_plan", err
 			}
 			if rowsAffected == 0 {
-				return "zero_row_affected_admin_update_plan", errors.New("no plan is updated")
+				return false, "zero_row_affected_admin_update_plan", errors.New("no plan is updated")
 			}
+			updated = true
 		}
 	}
-	return "", nil
+	return updated, "", nil
 }
 
 func getPlanChangesData(payload AdminEditRequest, curPlanDetails []AdminDashboardPlanDetailsRow) [][2]bool {
@@ -828,9 +842,10 @@ func handleAdminUpdateAssessmentScore(
 	criteriaLen int,
 	now time.Time,
 	newScores []map[string]int,
-) (string, error) {
+) (bool, string, error) {
 	changesIndex := getScoreChangedPlanIndex(newScores, curPlanDetails, criteriaLen)
 
+	updated := false
 	// insert new scores for each plan in changesIndex
 	for _, target := range changesIndex {
 		// add all 7 rows to  assessment_score table
@@ -864,24 +879,25 @@ func handleAdminUpdateAssessmentScore(
 		stmt, err := tx.Prepare(addScoreBuilder.String())
 		if err != nil {
 			slog.Error("error admin prepare add insert assessment_score sql", "error", err)
-			return "admin_prepare_sql_score", err
+			return false, "admin_prepare_sql_score", err
 		}
 		result, err := stmt.ExecContext(ctx, scoreValues...)
 		if err != nil {
 			slog.Error("error admin execContext on assessment_score sql", "error", err)
-			return "admin_exec_sql_score", err
+			return false, "admin_exec_sql_score", err
 		}
 		rowsAffected, err := result.RowsAffected()
 		if err != nil {
 			slog.Error("admin execContext on insert assessment_score sql", "error", err)
-			return "admin_rows_affected_score", err
+			return false, "admin_rows_affected_score", err
 		}
 		if rowsAffected == 0 {
-			return "admin_zero_row_affected_score", errors.New("admin: no score is created")
+			return false, "admin_zero_row_affected_score", errors.New("admin: no score is created")
 		}
+		updated = true
 	}
 
-	return "", nil
+	return updated, "", nil
 }
 
 func getScoreChangedPlanIndex(newScores []map[string]int, curPlanDetails []AdminDashboardPlanDetailsRow, criteriaLen int) []int {

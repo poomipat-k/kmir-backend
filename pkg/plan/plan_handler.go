@@ -23,7 +23,7 @@ type PlanStore interface {
 	GetAssessmentCriteria() ([]AssessmentCriteria, error)
 	GetAdminNote() (string, error)
 	GetOnlyLatestScore() ([]LatestScoreTimestamp, error)
-	AdminEdit(payload AdminEditRequest, userId int) (string, error)
+	AdminEdit(payload AdminEditRequest, userId int) (bool, string, error)
 }
 
 type PlanHandler struct {
@@ -284,15 +284,23 @@ func (h *PlanHandler) AdminEdit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errName, err = h.store.AdminEdit(payload, userId)
+	updated, errName, err := h.store.AdminEdit(payload, userId)
 	if err != nil {
 		slog.Error(err.Error())
 		utils.ErrorJSON(w, err, fmt.Sprintf("store: %s", errName), http.StatusBadRequest)
 		return
 	}
 
+	if !updated {
+		utils.WriteJSON(w, http.StatusOK, common.CommonSuccessResponse{
+			Success: false,
+			Message: "nothing changed",
+		})
+		return
+	}
 	utils.WriteJSON(w, http.StatusOK, common.CommonSuccessResponse{
 		Success: true,
-		Message: "admin update success",
+		Message: "admin update successfully",
 	})
+
 }
