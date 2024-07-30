@@ -704,8 +704,20 @@ func (s *store) AdminEdit(payload AdminEditRequest, userId int) (string, error) 
 		return "now", err
 	}
 
-	if *payload.AssessmentScore != nil {
-		errName, err := s.handleAdminUpdateAssessmentScore(ctx, tx, planDetails, userId, criteriaLen, now, *payload.AssessmentScore)
+	if payload.AssessmentScore != nil {
+		errName, err := handleAdminUpdateAssessmentScore(ctx, tx, planDetails, userId, criteriaLen, now, *payload.AssessmentScore)
+		if err != nil {
+			return errName, err
+		}
+	}
+
+	errName, err := handleAdminUpdatePlan(ctx, tx, planDetails, now, payload)
+	if err != nil {
+		return errName, err
+	}
+
+	if payload.AdminNote != nil {
+		errName, err := handleAdminUpdateAdminNote(ctx, tx, *payload.AdminNote)
 		if err != nil {
 			return errName, err
 		}
@@ -719,7 +731,96 @@ func (s *store) AdminEdit(payload AdminEditRequest, userId int) (string, error) 
 	return "", nil
 }
 
-func (s *store) handleAdminUpdateAssessmentScore(
+func handleAdminUpdateAdminNote(
+	ctx context.Context,
+	tx *sql.Tx,
+	newNote string,
+) (string, error) {
+	const sql = "UPDATE admin_note SET note = $1 WHERE id = 1;"
+	result, err := tx.ExecContext(ctx, sql, newNote)
+	if err != nil {
+		slog.Error("admin update admin_note sql", "error", err)
+		return "update_admin_note", err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		slog.Error("rowsAffected update admin_note sql", "error", err)
+		return "rows_affected_admin_note", err
+	}
+	if rowsAffected == 0 {
+		return "zero_row_affected_admin_note", errors.New("update admin_note failed")
+	}
+	return "", nil
+}
+
+func handleAdminUpdatePlan(
+	ctx context.Context,
+	tx *sql.Tx,
+	curPlanDetails []AdminDashboardPlanDetailsRow,
+	now time.Time,
+	payload AdminEditRequest,
+) (string, error) {
+	changes := getPlanChangesData(payload, curPlanDetails)
+	for i, changePair := range changes {
+		if changePair[0] || changePair[1] {
+			values := []any{}
+			paramCounter := 1
+			var updatePlanBuilder strings.Builder
+			updatePlanBuilder.WriteString("UPDATE plan SET ")
+			if changePair[0] {
+				updatePlanBuilder.WriteString(fmt.Sprintf("proposed_activity = $%d, proposed_activity_updated_at = $%d, proposed_activity_updated_by = 'admin'", paramCounter, paramCounter+1))
+				values = append(values, (*payload.ProposedActivity)[i], now)
+				paramCounter += 2
+			}
+			if changePair[1] {
+				if changePair[0] {
+					updatePlanBuilder.WriteString(", ")
+				}
+				updatePlanBuilder.WriteString(fmt.Sprintf("plan_note = $%d, plan_note_updated_at = $%d, plan_note_updated_by = 'admin'", paramCounter, paramCounter+1))
+				values = append(values, (*payload.PlanNote)[i], now)
+				paramCounter += 2
+			}
+			updatePlanBuilder.WriteString(fmt.Sprintf(", updated_at = $%d, updated_by = 'admin' WHERE plan.id = $%d;", paramCounter, paramCounter+1))
+			values = append(values, now, curPlanDetails[i].PlanId)
+
+			stmt, err := tx.Prepare(updatePlanBuilder.String())
+			if err != nil {
+				slog.Error("error prepare admin update plan sql", "error", err)
+				return "prepare_sql_update_plan", err
+			}
+			result, err := stmt.ExecContext(ctx, values...)
+			if err != nil {
+				slog.Error("execContext on admin update plan sql", "error", err)
+				return "exec_admin_update_plan_sql", err
+			}
+			rowsAffected, err := result.RowsAffected()
+			if err != nil {
+				slog.Error("rowsAffected on admin update plan sql", "error", err)
+				return "rows_affected_admin_update_plan", err
+			}
+			if rowsAffected == 0 {
+				return "zero_row_affected_admin_update_plan", errors.New("no plan is updated")
+			}
+		}
+	}
+	return "", nil
+}
+
+func getPlanChangesData(payload AdminEditRequest, curPlanDetails []AdminDashboardPlanDetailsRow) [][2]bool {
+	changes := [][2]bool{} // [][proposedActivity, planNote]
+	for i, p := range curPlanDetails {
+		changes = append(changes, [2]bool{false, false})
+		if payload.ProposedActivity != nil && (*payload.ProposedActivity)[i] != *p.ProposedActivity {
+			changes[i][0] = true
+		}
+		if payload.PlanNote != nil && (*payload.PlanNote)[i] != *p.PlanNote {
+			changes[i][1] = true
+		}
+	}
+	return changes
+}
+
+func handleAdminUpdateAssessmentScore(
 	ctx context.Context,
 	tx *sql.Tx,
 	curPlanDetails []AdminDashboardPlanDetailsRow,
@@ -736,7 +837,6 @@ func (s *store) handleAdminUpdateAssessmentScore(
 		var addScoreBuilder strings.Builder
 		scoreValues := []any{}
 		addScoreBuilder.WriteString("INSERT INTO assessment_score (plan_id, user_id, assessment_criteria_id, score, year, created_at) VALUES ")
-		// check if there is at least 1 score changed
 		for i := 0; i < criteriaLen; i++ {
 			addScoreBuilder.WriteString(fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d)",
 				i*6+1,
