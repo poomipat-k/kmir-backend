@@ -32,7 +32,7 @@ func (s *store) GetAllPreviewPlan() ([]PlanPreview, error) {
 	var data []PlanPreview
 	for rows.Next() {
 		var row PlanPreview
-		err = rows.Scan(&row.Id, &row.Name, &row.UserId, &row.Topic, &row.TopicEn, &row.Goal)
+		err = rows.Scan(&row.Id, &row.Name, &row.UserId, &row.Topic, &row.TopicEn, &row.IrGoalDetails)
 		if err != nil {
 			return nil, err
 		}
