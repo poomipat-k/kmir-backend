@@ -43,8 +43,8 @@ func (app *Server) Routes(db *sql.DB) http.Handler {
 		r.Get("/plan/details/{planName}", appMiddleware.IsLoggedIn(planHandler.GetPlanDetails))
 		r.Get("/plan/edit/{planName}", appMiddleware.IsLoggedIn(planHandler.CanEditPlan))
 
-		r.Get("/admin/plans", appMiddleware.IsAdmin(planHandler.GetAllPlanDetails))
-		r.Post("/admin/scores", appMiddleware.IsAdmin(planHandler.AdminGetScores))
+		r.Get("/admin/plans", appMiddleware.IsAdminOrViewer(planHandler.GetAllPlanDetails))
+		r.Post("/admin/scores", appMiddleware.IsAdminOrViewer(planHandler.AdminGetScores))
 		r.Patch("/admin/dashboard", appMiddleware.IsAdmin(planHandler.AdminEdit))
 
 		r.Patch("/plan", appMiddleware.IsUser(planHandler.UserEditPlan))
