@@ -119,12 +119,12 @@ func (s *store) getAllPlansDetailsForAdmin() ([]AdminDashboardPlanDetailsRow, er
 			&row.Topic,
 			&row.TopicEn,
 			&row.TopicShort,
+			&row.IrGoalType,
+			&row.IrGoalDetails,
 			&row.ProposedActivity,
 			&row.PlanNote,
 			&row.UpdatedAt,
 			&row.UpdatedBy,
-			&row.ReadinessWillingnessUpdatedAt,
-			&row.ReadinessWillingnessUpdatedBy,
 			&row.IrGoalTypeUpdatedAt,
 			&row.IrGoalTypeUpdatedBy,
 			&row.IrGoalDetailsUpdatedAt,
@@ -196,9 +196,6 @@ func (s *store) GetPlanDetails(planName, userRole string, username string) (Plan
 		&pd.Topic,
 		&pd.TopicEn,
 		&pd.TopicShort,
-		&pd.ReadinessWillingness,
-		&pd.ReadinessWillingnessUpdatedAt,
-		&pd.ReadinessWillingnessUpdatedBy,
 		&pd.IrGoalType,
 		&pd.IrGoalTypeUpdatedAt,
 		&pd.IrGoalTypeUpdatedBy,
@@ -549,11 +546,6 @@ func (s *store) EditPlan(planName string, payload EditPlanRequest, userRole stri
 	var sqlParams []string
 	sqlValues := []any{}
 	totalParamsCount := 0
-	if payload.ReadinessWillingness != nil && *payload.ReadinessWillingness != *currentPlanData.ReadinessWillingness {
-		sqlParams = append(sqlParams, "readiness_willingness", "readiness_willingness_updated_at", "readiness_willingness_updated_by")
-		sqlValues = append(sqlValues, payload.ReadinessWillingness, now, userRole)
-		totalParamsCount += 3
-	}
 
 	if payload.IrGoalType != nil && *payload.IrGoalType != *currentPlanData.IrGoalType {
 		sqlParams = append(sqlParams, "ir_goal_type", "ir_goal_type_updated_at", "ir_goal_type_updated_by")

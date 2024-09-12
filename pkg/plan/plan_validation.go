@@ -21,9 +21,6 @@ func validateScore(scores map[string]int) (string, error) {
 }
 
 func validateEditPlanPayload(payload EditPlanRequest) (string, error) {
-	if payload.ReadinessWillingness != nil && *payload.ReadinessWillingness == "" {
-		return "readinessWillingness", ReadinessWillingnessRequiredError{}
-	}
 	if payload.IrGoalType != nil && *payload.IrGoalType == "" {
 		return "irGoalType", IrGoalTypeRequiredError{}
 	}
