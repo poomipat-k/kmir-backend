@@ -48,6 +48,12 @@ func (e SomePlanScoreIsMissing) Error() string {
 	return "some plan score is missing"
 }
 
+type SomeIrWorkGoalIsMissing struct{}
+
+func (e SomeIrWorkGoalIsMissing) Error() string {
+	return "some ir work goal is missing"
+}
+
 type SomeProposedActivityIsMissing struct{}
 
 func (e SomeProposedActivityIsMissing) Error() string {

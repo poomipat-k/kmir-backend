@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"log/slog"
 	"strings"
 	"time"
@@ -766,25 +767,48 @@ func handleAdminUpdatePlan(
 ) (bool, string, error) {
 	changes := getPlanChangesData(payload, curPlanDetails)
 	updated := false
-	for i, changePair := range changes {
-		if changePair[0] || changePair[1] {
+	log.Println("===changes", changes)
+	for i, updateList := range changes {
+		if updateList[0] || updateList[1] || updateList[2] || updateList[3] {
 			values := []any{}
 			paramCounter := 1
 			var updatePlanBuilder strings.Builder
 			updatePlanBuilder.WriteString("UPDATE plan SET ")
-			if changePair[0] {
+			needComma := false
+			if updateList[0] {
 				updatePlanBuilder.WriteString(fmt.Sprintf("proposed_activity = $%d, proposed_activity_updated_at = $%d, proposed_activity_updated_by = 'admin'", paramCounter, paramCounter+1))
 				values = append(values, (*payload.ProposedActivity)[i], now)
 				paramCounter += 2
+				needComma = true
 			}
-			if changePair[1] {
-				if changePair[0] {
+			if updateList[1] {
+				if needComma {
 					updatePlanBuilder.WriteString(", ")
 				}
+				needComma = true
 				updatePlanBuilder.WriteString(fmt.Sprintf("plan_note = $%d, plan_note_updated_at = $%d, plan_note_updated_by = 'admin'", paramCounter, paramCounter+1))
 				values = append(values, (*payload.PlanNote)[i], now)
 				paramCounter += 2
 			}
+			if updateList[2] {
+				if needComma {
+					updatePlanBuilder.WriteString(", ")
+				}
+				needComma = true
+				updatePlanBuilder.WriteString(fmt.Sprintf("ir_goal_type = $%d, ir_goal_type_updated_at = $%d, ir_goal_type_updated_by = 'admin'", paramCounter, paramCounter+1))
+				values = append(values, *(*payload.IrWorkGoal)[i].GoalType, now)
+				paramCounter += 2
+			}
+			if updateList[3] {
+				if needComma {
+					updatePlanBuilder.WriteString(", ")
+				}
+				updatePlanBuilder.WriteString(fmt.Sprintf("ir_goal_details = $%d, ir_goal_details_updated_at = $%d, ir_goal_details_updated_by = 'admin'", paramCounter, paramCounter+1))
+				values = append(values, *(*payload.IrWorkGoal)[i].GoalDetails, now)
+				paramCounter += 2
+				needComma = true
+			}
+
 			updatePlanBuilder.WriteString(fmt.Sprintf(", updated_at = $%d, updated_by = 'admin' WHERE plan.id = $%d;", paramCounter, paramCounter+1))
 			values = append(values, now, curPlanDetails[i].PlanId)
 
@@ -812,15 +836,25 @@ func handleAdminUpdatePlan(
 	return updated, "", nil
 }
 
-func getPlanChangesData(payload AdminEditRequest, curPlanDetails []AdminDashboardPlanDetailsRow) [][2]bool {
-	changes := [][2]bool{} // [][proposedActivity, planNote]
+func getPlanChangesData(payload AdminEditRequest, curPlanDetails []AdminDashboardPlanDetailsRow) [][4]bool {
+	changes := [][4]bool{} // [][proposedActivity, planNote, irGoalType, irGoalDetails]
 	for i, p := range curPlanDetails {
-		changes = append(changes, [2]bool{false, false})
+		changes = append(changes, [4]bool{false, false, false, false})
 		if payload.ProposedActivity != nil && (*payload.ProposedActivity)[i] != *p.ProposedActivity {
 			changes[i][0] = true
 		}
 		if payload.PlanNote != nil && (*payload.PlanNote)[i] != *p.PlanNote {
 			changes[i][1] = true
+		}
+		if payload.IrWorkGoal != nil {
+			if *(*payload.IrWorkGoal)[i].GoalType != *p.IrGoalType {
+				log.Println("here type i: ", i)
+				changes[i][2] = true
+			}
+			if (*(*payload.IrWorkGoal)[i].GoalDetails) != *p.IrGoalDetails {
+				log.Println("here goal details i: ", i)
+				changes[i][3] = true
+			}
 		}
 	}
 	return changes

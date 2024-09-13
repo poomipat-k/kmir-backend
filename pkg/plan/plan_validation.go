@@ -46,6 +46,12 @@ func validateAdminEditPayload(payload AdminEditRequest) (string, error) {
 			return errName, err
 		}
 	}
+	if payload.IrWorkGoal != nil {
+		errName, err := validateIrWorkGoalList(*payload.IrWorkGoal)
+		if err != nil {
+			return errName, err
+		}
+	}
 	if payload.ProposedActivity != nil {
 		errName, err := validateProposeActivityList(*payload.ProposedActivity)
 		if err != nil {
@@ -72,6 +78,21 @@ func validateAdminAssessmentScoreList(assessmentScoreList []map[string]int) (str
 		errName, err := validateScore(s)
 		if err != nil {
 			return fmt.Sprintf("plan.id: %d, %s", i+1, errName), err
+		}
+	}
+	return "", nil
+}
+
+func validateIrWorkGoalList(irWorkGoal []IrWorkGoal) (string, error) {
+	if len(irWorkGoal) != allPlanCount {
+		return "irWorkGoal", SomeIrWorkGoalIsMissing{}
+	}
+	for i, ir := range irWorkGoal {
+		if ir.GoalType == nil || *ir.GoalType == "" {
+			return fmt.Sprintf("plan.id: %d, irGoalType", i+1), IrGoalTypeRequiredError{}
+		}
+		if ir.GoalDetails == nil || *ir.GoalDetails == "" {
+			return fmt.Sprintf("plan.id: %d, irGoalDetails", i+1), IrGoalDetailsRequiredError{}
 		}
 	}
 	return "", nil

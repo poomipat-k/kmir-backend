@@ -118,8 +118,14 @@ type EditPlanRequest struct {
 	ContactPerson    *string        `json:"contactPerson,omitempty"`
 }
 
+type IrWorkGoal struct {
+	GoalType    *string `json:"goalType,omitempty"`
+	GoalDetails *string `json:"goalDetails,omitempty"`
+}
+
 type AdminEditRequest struct {
 	AssessmentScore  *[]map[string]int `json:"assessmentScore,omitempty"`
+	IrWorkGoal       *[]IrWorkGoal     `json:"irWorkGoal,omitempty"`
 	ProposedActivity *[]string         `json:"proposedActivity,omitempty"`
 	PlanNote         *[]string         `json:"planNote,omitempty"`
 	AdminNote        *string           `json:"adminNote,omitempty"`
