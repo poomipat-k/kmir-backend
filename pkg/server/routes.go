@@ -27,6 +27,7 @@ func (app *Server) Routes(db *sql.DB) http.Handler {
 	planHandler := plan.NewPlanHandler(planStore)
 
 	mux.Route("/api/v1", func(r chi.Router) {
+		// Todo: remove this endpoint before go prod
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			utils.WriteJSON(w, http.StatusOK, "API landing Page")
 		})
