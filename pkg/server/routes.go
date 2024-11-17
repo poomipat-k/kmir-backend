@@ -29,10 +29,10 @@ func (app *Server) Routes(db *sql.DB) http.Handler {
 	mux.Route("/api/v1", func(r chi.Router) {
 		// Todo: remove this endpoint before go prod
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			utils.WriteJSON(w, http.StatusOK, "API landing Page")
+			utils.WriteJSON(w, http.StatusOK, "KMIR API landing Page")
 		})
 		// Todo: remove this endpoint before go prod
-		r.Post("/hash-password", appMiddleware.IsAdmin(userHandler.GenerateHashedPassword))
+		// r.Post("/hash-password", userHandler.GenerateHashedPassword)
 
 		r.Post("/auth/login", userHandler.Login)
 		r.Post("/auth/logout", userHandler.Logout)
