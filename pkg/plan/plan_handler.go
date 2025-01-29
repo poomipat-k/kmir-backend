@@ -2,6 +2,7 @@ package plan
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -17,6 +18,12 @@ type PlanStore interface {
 	GetPlanDetails(planName, userRole string, username string) (PlanDetails, error)
 	CanEditPlan(planName, username string) (bool, error)
 	EditPlan(planName string, payload EditPlanRequest, userRole string, username string, userId int) (string, error)
+	GetAllPlanDetails(criteriaLen int) ([]AdminDashboardPlanDetailsRow, error)
+	AdminGetScores(fromYear, toYear int, plan string) ([]AssessmentScore, error)
+	GetAssessmentCriteria() ([]AssessmentCriteria, error)
+	GetAdminNote() (string, error)
+	GetOnlyLatestScore() ([]LatestScoreTimestamp, error)
+	AdminEdit(payload AdminEditRequest, userId int) (bool, string, error)
 }
 
 type PlanHandler struct {
@@ -72,6 +79,59 @@ func (h *PlanHandler) GetPlanDetails(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Error(err.Error())
 		utils.ErrorJSON(w, err, "planName", http.StatusBadRequest)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, data)
+}
+
+func (h *PlanHandler) GetAllPlanDetails(w http.ResponseWriter, r *http.Request) {
+	criteriaList, err := h.store.GetAssessmentCriteria()
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "", http.StatusInternalServerError)
+		return
+	}
+	planDetails, err := h.store.GetAllPlanDetails(len(criteriaList))
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "", http.StatusInternalServerError)
+		return
+	}
+	adminNote, err := h.store.GetAdminNote()
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "admin note", http.StatusInternalServerError)
+		return
+	}
+
+	latestScores, err := h.store.GetOnlyLatestScore()
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "latest scores", http.StatusInternalServerError)
+		return
+	}
+
+	response := AdminAllPlansDetailsResponse{
+		AssessmentCriteria: criteriaList,
+		PlanDetails:        planDetails,
+		AdminNote:          adminNote,
+		LatestScores:       latestScores,
+	}
+	utils.WriteJSON(w, http.StatusOK, response)
+}
+
+func (h *PlanHandler) AdminGetScores(w http.ResponseWriter, r *http.Request) {
+	var payload AdminGetScoresRequest
+	err := utils.ReadJSON(w, r, &payload)
+	if err != nil {
+		utils.ErrorJSON(w, err, "payload", http.StatusBadRequest)
+		return
+	}
+	// validate payload
+	data, err := h.store.AdminGetScores(payload.FromYear, payload.ToYear, payload.Plan)
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "store", http.StatusInternalServerError)
 		return
 	}
 	utils.WriteJSON(w, http.StatusOK, data)
@@ -201,4 +261,46 @@ func (h *PlanHandler) UserEditPlan(w http.ResponseWriter, r *http.Request) {
 		Success: true,
 		Message: "update plan success",
 	})
+}
+
+func (h *PlanHandler) AdminEdit(w http.ResponseWriter, r *http.Request) {
+	userId, err := utils.GetUserIdFromRequestHeader(r)
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, "userId", http.StatusUnauthorized)
+		return
+	}
+
+	var payload AdminEditRequest
+	err = utils.ReadJSON(w, r, &payload)
+	if err != nil {
+		utils.ErrorJSON(w, err, "payload", http.StatusBadRequest)
+		return
+	}
+	errName, err := validateAdminEditPayload(payload)
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, errName, http.StatusBadRequest)
+		return
+	}
+
+	updated, errName, err := h.store.AdminEdit(payload, userId)
+	if err != nil {
+		slog.Error(err.Error())
+		utils.ErrorJSON(w, err, fmt.Sprintf("store: %s", errName), http.StatusBadRequest)
+		return
+	}
+
+	if !updated {
+		utils.WriteJSON(w, http.StatusOK, common.CommonSuccessResponse{
+			Success: false,
+			Message: "nothing changed",
+		})
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, common.CommonSuccessResponse{
+		Success: true,
+		Message: "admin update successfully",
+	})
+
 }
